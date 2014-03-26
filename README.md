@@ -53,6 +53,6 @@ for i, raw := range versionsRaw {
     versions[i] = v
 }
 
-# After this, the versions are properly sorted
+// After this, the versions are properly sorted
 sort.Sort(version.Collection(versions))
 ```
