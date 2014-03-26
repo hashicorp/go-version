@@ -9,8 +9,15 @@ import (
 	"strings"
 )
 
-var NumericRegexp *regexp.Regexp
+// The compiled regular expression used to test the validity of a version.
 var VersionRegexp *regexp.Regexp
+
+// The raw regular expression string used for testing the validity
+// of a version.
+const VersionRegexpRaw string = `([0-9]+(\.[0-9]+){0,2})` +
+	`(-([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
+	`(\+([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
+	`?`
 
 // Version represents a single version.
 type Version struct {
@@ -20,12 +27,7 @@ type Version struct {
 }
 
 func init() {
-	NumericRegexp = regexp.MustCompile(`^[0-9]+$`)
-	VersionRegexp = regexp.MustCompile(
-		`^([0-9]+(\.[0-9]+){0,2})` +
-			`(-([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
-			`(\+([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
-			`?$`)
+	VersionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
 }
 
 // NewVersion parses the given version and returns a new
