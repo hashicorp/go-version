@@ -59,6 +59,11 @@ func NewConstraint(v string) ([]*Constraint, error) {
 	return result, nil
 }
 
+// Check tests if a constraint is validated by the given version.
+func (c *Constraint) Check(v *Version) bool {
+	return c.f(v, c.check)
+}
+
 func parseSingle(v string) (*Constraint, error) {
 	matches := constraintRegexp.FindStringSubmatch(v)
 	if matches == nil {

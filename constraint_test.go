@@ -29,3 +29,42 @@ func TestNewConstraint(t *testing.T) {
 		}
 	}
 }
+
+func TestConstraintCheck(t *testing.T) {
+	cases := []struct {
+		constraint string
+		version    string
+		check      bool
+	}{
+		{">= 1.0, < 1.2", "1.1.5", true},
+		{"< 1.0, < 1.2", "1.1.5", false},
+		{"= 1.0", "1.1.5", false},
+		{"= 1.0", "1.0.0", true},
+	}
+
+	for _, tc := range cases {
+		c, err := NewConstraint(tc.constraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		v, err := NewVersion(tc.version)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := true
+		for _, single := range c {
+			if !single.Check(v) {
+				actual = false
+				break
+			}
+		}
+
+		expected := tc.check
+		if actual != expected {
+			t.Fatalf("Version: %s\nConstraint: %s\nExpected: %#v",
+				tc.version, tc.constraint, expected)
+		}
+	}
+}
