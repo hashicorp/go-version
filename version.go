@@ -107,6 +107,21 @@ func (v *Version) Compare(other *Version) int {
 	panic("should not be reached")
 }
 
+// Equal tests if two versions are equal.
+func (v *Version) Equal(o *Version) bool {
+	return v.Compare(o) == 0
+}
+
+// GreaterThan tests if this version is greater than another version.
+func (v *Version) GreaterThan(o *Version) bool {
+	return v.Compare(o) > 0
+}
+
+// LessThan tests if this version is less than another version.
+func (v *Version) LessThan(o *Version) bool {
+	return v.Compare(o) < 0
+}
+
 // Metadata returns any metadata that was part of the version
 // string.
 //
