@@ -1,6 +1,7 @@
 package version
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -13,10 +14,9 @@ var VersionRegexp *regexp.Regexp
 
 // Version represents a single version.
 type Version struct {
-	original   string
-	metadata   string
-	preVersion string
-	segments   []int
+	metadata string
+	pre      string
+	segments []int
 }
 
 func init() {
@@ -52,10 +52,9 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	return &Version{
-		original:   v,
-		metadata:   matches[7],
-		preVersion: matches[4],
-		segments:   segments,
+		metadata: matches[7],
+		pre:      matches[4],
+		segments: segments,
 	}, nil
 }
 
@@ -124,7 +123,7 @@ func (v *Version) Metadata() string {
 // version (but before any metadata). For example, with "1.2.3-beta",
 // the prerelease information is "beta".
 func (v *Version) Prerelease() string {
-	return v.preVersion
+	return v.pre
 }
 
 // Segments returns the numeric segments of the version as a slice.
@@ -139,5 +138,14 @@ func (v *Version) Segments() []int {
 // String returns the full version string included pre-release
 // and metadata information.
 func (v *Version) String() string {
-	return v.original
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "%d.%d.%d", v.segments[0], v.segments[1], v.segments[2])
+	if v.pre != "" {
+		fmt.Fprintf(&buf, "-%s", v.pre)
+	}
+	if v.metadata != "" {
+		fmt.Fprintf(&buf, "+%s", v.metadata)
+	}
+
+	return buf.String()
 }

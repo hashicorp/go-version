@@ -34,8 +34,8 @@ func TestNewVersion(t *testing.T) {
 
 func TestVersionCompare(t *testing.T) {
 	cases := []struct {
-		v1 string
-		v2 string
+		v1       string
+		v2       string
 		expected int
 	}{
 		{"1.2.3", "1.4.5", -1},
@@ -122,10 +122,10 @@ func TestVersionSegments(t *testing.T) {
 		version  string
 		expected []int
 	}{
-		{"1.2.3", []int{1,2,3}},
-		{"1.2-beta", []int{1,2,0}},
-		{"1-x.Y.0", []int{1,0,0}},
-		{"1.2.0-x.Y.0+metadata", []int{1,2,0}},
+		{"1.2.3", []int{1, 2, 3}},
+		{"1.2-beta", []int{1, 2, 0}},
+		{"1-x.Y.0", []int{1, 0, 0}},
+		{"1.2.0-x.Y.0+metadata", []int{1, 2, 0}},
 	}
 
 	for _, tc := range cases {
@@ -143,21 +143,21 @@ func TestVersionSegments(t *testing.T) {
 }
 
 func TestVersionString(t *testing.T) {
-	cases := []string {
-		"1.2.3",
-		"1.2-beta",
-		"1.2.0-x.Y.0",
-		"1.2.0-x.Y.0+metadata",
+	cases := [][]string{
+		{"1.2.3", "1.2.3"},
+		{"1.2-beta", "1.2.0-beta"},
+		{"1.2.0-x.Y.0", "1.2.0-x.Y.0"},
+		{"1.2.0-x.Y.0+metadata", "1.2.0-x.Y.0+metadata"},
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc)
+		v, err := NewVersion(tc[0])
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
 
 		actual := v.String()
-		expected := tc
+		expected := tc[1]
 		if actual != expected {
 			t.Fatalf("expected: %s\nactual: %s", expected, actual)
 		}
