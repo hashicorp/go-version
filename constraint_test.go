@@ -60,14 +60,7 @@ func TestConstraintCheck(t *testing.T) {
 			t.Fatalf("err: %s", err)
 		}
 
-		actual := true
-		for _, single := range c {
-			if !single.Check(v) {
-				actual = false
-				break
-			}
-		}
-
+		actual := c.Check(v)
 		expected := tc.check
 		if actual != expected {
 			t.Fatalf("Version: %s\nConstraint: %s\nExpected: %#v",

@@ -6,3 +6,33 @@ can sort a collection of versions properly, handles prerelease/beta
 versions, can increment versions, etc.
 
 Versions used with go-version must follow [SemVer](http://semver.org/).
+
+## Installation and Usage
+
+Package documentation can be found on
+[GoDoc](http://godoc.org/github.com/hashicorp/go-version).
+
+Installation can be done with a normal `go get`:
+
+```
+$ go get github.com/hashicorp/go-version
+```
+
+Basic usage examples:
+
+```go
+v1, err := version.NewVersion("1.2")
+v2, err := version.NewVersion("1.5")
+
+// Comparison example. There is also GreaterThan, Equal, and just
+// a simple Compare that returns an int allowing easy >=, <=, etc.
+if v1.LessThan(v2) {
+    fmt.Printf("%s is less than %s", v1, v2)
+}
+
+// Constraints example.
+constraints, err := version.NewConstraint(">= 1.0, < 1.4")
+if constraints.Check(v1) {
+	fmt.Printf("%s satisfies constraints %s", v1, constraints)
+}
+```

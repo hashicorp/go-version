@@ -13,6 +13,10 @@ type Constraint struct {
 	check *Version
 }
 
+// Constraints is a slice of constraints. We make a custom type so that
+// we can add methods to it.
+type Constraints []*Constraint
+
 type constraintFunc func(v, c *Version) bool
 
 var constraintOperators map[string]constraintFunc
@@ -44,7 +48,7 @@ func init() {
 // NewConstraint will parse one or more constraints from the given
 // constraint string. The string must be a comma-separated list of
 // constraints.
-func NewConstraint(v string) ([]*Constraint, error) {
+func NewConstraint(v string) (Constraints, error) {
 	vs := strings.Split(v, ",")
 	result := make([]*Constraint, len(vs))
 	for i, single := range vs {
@@ -56,7 +60,18 @@ func NewConstraint(v string) ([]*Constraint, error) {
 		result[i] = c
 	}
 
-	return result, nil
+	return Constraints(result), nil
+}
+
+// Check tests if a version satisfies all the constraints.
+func (cs Constraints) Check(v *Version) bool {
+	for _, c := range cs {
+		if !c.Check(v) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Check tests if a constraint is validated by the given version.
