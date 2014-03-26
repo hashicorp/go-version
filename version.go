@@ -2,6 +2,7 @@ package version
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ type Version struct {
 func init() {
 	NumericRegexp = regexp.MustCompile(`^[0-9]+$`)
 	VersionRegexp = regexp.MustCompile(
-		`^([0-9]+(\.[0-9]+)*)` +
+		`^([0-9]+(\.[0-9]+){0,2})` +
 			`(-([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
 			`(\+([0-9A-Za-z]+(\.[0-9A-Za-z]+)*))?` +
 			`?$`)
@@ -36,7 +37,7 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	segmentsStr := strings.Split(matches[1], ".")
-	segments := make([]int, len(segmentsStr))
+	segments := make([]int, len(segmentsStr), 3)
 	for i, str := range segmentsStr {
 		val, err := strconv.ParseInt(str, 10, 32)
 		if err != nil {
@@ -46,12 +47,15 @@ func NewVersion(v string) (*Version, error) {
 
 		segments[i] = int(val)
 	}
+	for i := len(segments); i < 3; i++ {
+		segments = append(segments, 0)
+	}
 
 	return &Version{
 		original:   v,
 		metadata:   matches[7],
 		preVersion: matches[4],
-		segments: segments,
+		segments:   segments,
 	}, nil
 }
 
@@ -67,7 +71,41 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	return 0
+	segmentsSelf := v.Segments()
+	segmentsOther := other.Segments()
+
+	// If the segments are the same, we must compare on prerelease info
+	if reflect.DeepEqual(segmentsSelf, segmentsOther) {
+		preSelf := v.Prerelease()
+		preOther := other.Prerelease()
+		if preSelf == "" && preOther == "" {
+			return 0
+		}
+		if preSelf == "" {
+			return 1
+		}
+		if preOther == "" {
+			return -1
+		}
+
+		panic("proper prerelase compare not done yet")
+	}
+
+	// Compare the segments
+	for i := 0; i < len(segmentsSelf); i++ {
+		lhs := segmentsSelf[i]
+		rhs := segmentsOther[i]
+
+		if lhs == rhs {
+			continue
+		} else if lhs < rhs {
+			return -1
+		} else {
+			return 1
+		}
+	}
+
+	panic("should not be reached")
 }
 
 // Metadata returns any metadata that was part of the version

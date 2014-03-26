@@ -19,6 +19,7 @@ func TestNewVersion(t *testing.T) {
 		{"1.2-beta.5", false},
 		{"\n1.2", true},
 		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.3.4", true},
 	}
 
 	for _, tc := range cases {
@@ -27,6 +28,41 @@ func TestNewVersion(t *testing.T) {
 			t.Fatalf("expected error for version: %s", tc.version)
 		} else if !tc.err && err != nil {
 			t.Fatalf("error for version %s: %s", tc.version, err)
+		}
+	}
+}
+
+func TestVersionCompare(t *testing.T) {
+	cases := []struct {
+		v1 string
+		v2 string
+		expected int
+	}{
+		{"1.2.3", "1.4.5", -1},
+		{"1.2-beta", "1.2-beta", 0},
+		{"1.2", "1.1.4", 1},
+		{"1.2", "1.2-beta", 1},
+		{"1.2+foo", "1.2+beta", 0},
+	}
+
+	for _, tc := range cases {
+		v1, err := NewVersion(tc.v1)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		v2, err := NewVersion(tc.v2)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := v1.Compare(v2)
+		expected := tc.expected
+		if actual != expected {
+			t.Fatalf(
+				"%s <=> %s\nexpected: %d\nactual: %d",
+				tc.v1, tc.v2,
+				expected, actual)
 		}
 	}
 }
@@ -87,8 +123,8 @@ func TestVersionSegments(t *testing.T) {
 		expected []int
 	}{
 		{"1.2.3", []int{1,2,3}},
-		{"1.2-beta", []int{1,2}},
-		{"1.2.0-x.Y.0", []int{1,2,0}},
+		{"1.2-beta", []int{1,2,0}},
+		{"1-x.Y.0", []int{1,0,0}},
 		{"1.2.0-x.Y.0+metadata", []int{1,2,0}},
 	}
 
