@@ -56,3 +56,9 @@ for i, raw := range versionsRaw {
 // After this, the versions are properly sorted
 sort.Sort(version.Collection(versions))
 ```
+
+## Issues and Contributing
+
+If you find an issue with this library, please report an issue. If you'd
+like, we welcome any contributions. Fork this library and submit a pull
+request.
