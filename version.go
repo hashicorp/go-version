@@ -24,6 +24,7 @@ type Version struct {
 	metadata string
 	pre      string
 	segments []int
+	si       int
 }
 
 func init() {
@@ -40,6 +41,7 @@ func NewVersion(v string) (*Version, error) {
 
 	segmentsStr := strings.Split(matches[1], ".")
 	segments := make([]int, len(segmentsStr), 3)
+	si := 0
 	for i, str := range segmentsStr {
 		val, err := strconv.ParseInt(str, 10, 32)
 		if err != nil {
@@ -48,6 +50,7 @@ func NewVersion(v string) (*Version, error) {
 		}
 
 		segments[i] = int(val)
+		si += 1
 	}
 	for i := len(segments); i < 3; i++ {
 		segments = append(segments, 0)
@@ -57,6 +60,7 @@ func NewVersion(v string) (*Version, error) {
 		metadata: matches[7],
 		pre:      matches[4],
 		segments: segments,
+		si:       si,
 	}, nil
 }
 

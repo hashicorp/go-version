@@ -112,5 +112,15 @@ func constraintLessThanEqual(v, c *Version) bool {
 }
 
 func constraintPessimistic(v, c *Version) bool {
-	return false
+	if v.LessThan(c) {
+		return false
+	}
+
+	for i := 0; i < c.si-1; i++ {
+		if v.segments[i] != c.segments[i] {
+			return false
+		}
+	}
+
+	return true
 }
