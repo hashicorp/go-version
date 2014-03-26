@@ -10,7 +10,7 @@ import (
 )
 
 // The compiled regular expression used to test the validity of a version.
-var VersionRegexp *regexp.Regexp
+var versionRegexp *regexp.Regexp
 
 // The raw regular expression string used for testing the validity
 // of a version.
@@ -27,13 +27,13 @@ type Version struct {
 }
 
 func init() {
-	VersionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
+	versionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
 }
 
 // NewVersion parses the given version and returns a new
 // Version.
 func NewVersion(v string) (*Version, error) {
-	matches := VersionRegexp.FindStringSubmatch(v)
+	matches := versionRegexp.FindStringSubmatch(v)
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed version: %s", v)
 	}
