@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestVersionCollection(t *testing.T) {
+func TestCollection(t *testing.T) {
 	versionsRaw := []string{
 		"1.1.1",
 		"1.0",
@@ -25,7 +25,7 @@ func TestVersionCollection(t *testing.T) {
 		versions[i] = v
 	}
 
-	sort.Sort(VersionCollection(versions))
+	sort.Sort(Collection(versions))
 
 	actual := make([]string, len(versions))
 	for i, v := range versions {
