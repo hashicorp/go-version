@@ -22,7 +22,7 @@ Basic usage examples:
 
 ```go
 v1, err := version.NewVersion("1.2")
-v2, err := version.NewVersion("1.5")
+v2, err := version.NewVersion("1.5+metadata")
 
 // Comparison example. There is also GreaterThan, Equal, and just
 // a simple Compare that returns an int allowing easy >=, <=, etc.

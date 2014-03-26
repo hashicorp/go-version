@@ -68,3 +68,31 @@ func TestConstraintCheck(t *testing.T) {
 		}
 	}
 }
+
+func TestConstraintsString(t *testing.T) {
+	cases := []struct {
+		constraint string
+		result string
+	}{
+		{">= 1.0, < 1.2", ""},
+		{"~> 1.0.7", ""},
+	}
+
+	for _, tc := range cases {
+		c, err := NewConstraint(tc.constraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := c.String()
+		expected := tc.result
+		if expected == "" {
+			expected = tc.constraint
+		}
+
+		if actual != expected {
+			t.Fatalf("Constraint: %s\nExpected: %#v\nActual: %s",
+				tc.constraint, expected, actual)
+		}
+	}
+}

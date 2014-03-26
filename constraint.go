@@ -9,8 +9,9 @@ import (
 // Constraint represents a single constraint for a version, such as
 // ">= 1.0".
 type Constraint struct {
-	f     constraintFunc
-	check *Version
+	f        constraintFunc
+	check    *Version
+	original string
 }
 
 // Constraints is a slice of constraints. We make a custom type so that
@@ -74,9 +75,23 @@ func (cs Constraints) Check(v *Version) bool {
 	return true
 }
 
+// Returns the string format of the constraints
+func (cs Constraints) String() string {
+	csStr := make([]string, len(cs))
+	for i, c := range cs {
+		csStr[i] = c.String()
+	}
+
+	return strings.Join(csStr, ",")
+}
+
 // Check tests if a constraint is validated by the given version.
 func (c *Constraint) Check(v *Version) bool {
 	return c.f(v, c.check)
+}
+
+func (c *Constraint) String() string {
+	return c.original
 }
 
 func parseSingle(v string) (*Constraint, error) {
@@ -93,8 +108,9 @@ func parseSingle(v string) (*Constraint, error) {
 	}
 
 	return &Constraint{
-		f:     constraintOperators[matches[1]],
-		check: check,
+		f:        constraintOperators[matches[1]],
+		check:    check,
+		original: v,
 	}, nil
 }
 
