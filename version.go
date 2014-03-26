@@ -24,6 +24,8 @@ func init() {
 			`?$`)
 }
 
+// NewVersion parses the given version and returns a new
+// Version.
 func NewVersion(v string) (*Version, error) {
 	matches := VersionRegexp.FindStringSubmatch(v)
 	if matches == nil {
@@ -37,10 +39,21 @@ func NewVersion(v string) (*Version, error) {
 	}, nil
 }
 
+// Metadata returns any metadata that was part of the version
+// string.
+//
+// Metadata is anything that comes after the "+" in the version.
+// For example, with "1.2.3+beta", the metadata is "beta".
 func (v *Version) Metadata() string {
 	return v.metadata
 }
 
-func (v *Version) PrereleaseVersion() string {
+// Prerelease returns any prerelease data that is part of the version,
+// or blank if there is no prerelease data.
+//
+// Prerelease information is anything that comes after the "-" in the
+// version (but before any metadata). For example, with "1.2.3-beta",
+// the prerelease information is "beta".
+func (v *Version) Prerelease() string {
 	return v.preVersion
 }

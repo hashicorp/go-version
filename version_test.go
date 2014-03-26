@@ -55,7 +55,7 @@ func TestVersionMetadata(t *testing.T) {
 	}
 }
 
-func TestVersionPreVersion(t *testing.T) {
+func TestVersionPrerelease(t *testing.T) {
 	cases := []struct {
 		version  string
 		expected string
@@ -72,7 +72,7 @@ func TestVersionPreVersion(t *testing.T) {
 			t.Fatalf("err: %s", err)
 		}
 
-		actual := v.PrereleaseVersion()
+		actual := v.Prerelease()
 		expected := tc.expected
 		if actual != expected {
 			t.Fatalf("expected: %s\nactual: %s", expected, actual)
