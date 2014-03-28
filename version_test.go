@@ -67,6 +67,47 @@ func TestVersionCompare(t *testing.T) {
 	}
 }
 
+func TestComparePreReleases(t *testing.T) {
+	cases := []struct {
+		v1       string
+		v2       string
+		expected int
+	}{
+		{"1.2-beta.2", "1.2-beta.2", 0},
+		{"1.2-beta.1", "1.2-beta.2", -1},
+		{"3.2-alpha.1", "3.2-alpha", 1},
+		{"1.2-beta.2", "1.2-beta.1", 1},
+		{"1.2-beta", "1.2-beta.3", -1},
+		{"1.2-alpha", "1.2-beta.3", -1},
+		{"1.2-beta", "1.2-alpha.3", 1},
+		{"3.0-alpha.3", "3.0-rc.1", -1},
+		{"3.0-alpha3", "3.0-rc1", -1},
+		{"3.0-alpha.1", "3.0-alpha.beta", -1},
+		{"5.4-alpha", "5.4-alpha.beta", 1},
+	}
+
+	for _, tc := range cases {
+		v1, err := NewVersion(tc.v1)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		v2, err := NewVersion(tc.v2)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := v1.Compare(v2)
+		expected := tc.expected
+		if actual != expected {
+			t.Fatalf(
+				"%s <=> %s\nexpected: %d\nactual: %d",
+				tc.v1, tc.v2,
+				expected, actual)
+		}
+	}
+}
+
 func TestVersionMetadata(t *testing.T) {
 	cases := []struct {
 		version  string
