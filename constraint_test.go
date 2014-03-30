@@ -11,6 +11,7 @@ func TestNewConstraint(t *testing.T) {
 		err   bool
 	}{
 		{">= 1.2", 1, false},
+		{"1.0", 1, false},
 		{">= 1.x", 0, true},
 		{">= 1.2, < 1.0", 2, false},
 	}
@@ -40,6 +41,7 @@ func TestConstraintCheck(t *testing.T) {
 		{"< 1.0, < 1.2", "1.1.5", false},
 		{"= 1.0", "1.1.5", false},
 		{"= 1.0", "1.0.0", true},
+		{"1.0", "1.0.0", true},
 		{"~> 1.0", "2.0", false},
 		{"~> 1.0", "1.1", true},
 		{"~> 1.0", "1.2.3", true},

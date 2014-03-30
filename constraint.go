@@ -26,6 +26,7 @@ var constraintRegexp *regexp.Regexp
 
 func init() {
 	constraintOperators = map[string]constraintFunc{
+		"":   constraintEqual,
 		"=":  constraintEqual,
 		"!=": constraintNotEqual,
 		">":  constraintGreaterThan,
