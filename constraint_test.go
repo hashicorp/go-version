@@ -74,7 +74,7 @@ func TestConstraintCheck(t *testing.T) {
 func TestConstraintsString(t *testing.T) {
 	cases := []struct {
 		constraint string
-		result string
+		result     string
 	}{
 		{">= 1.0, < 1.2", ""},
 		{"~> 1.0.7", ""},

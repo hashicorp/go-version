@@ -161,7 +161,7 @@ func comparePrereleases(v string, other string) int {
 	}
 
 	// loop for parts to find the first difference
-	for i:=0; i < biggestLen; i = i +1 {
+	for i := 0; i < biggestLen; i = i + 1 {
 		partSelfPre := ""
 		if i < selfPreReleaseLen {
 			partSelfPre = selfPreReleaseMeta[i]
