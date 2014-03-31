@@ -113,6 +113,35 @@ func (v *Version) Compare(other *Version) int {
 	panic("should not be reached")
 }
 
+func comparePart(preSelf string, preOther string) int {
+	if preSelf == preOther {
+		return 0
+	}
+
+	// if a part is empty, we use the other to decide
+	if preSelf == "" {
+		_, notIsNumeric := strconv.ParseInt(preOther, 10, 64)
+		if notIsNumeric == nil {
+			return -1
+		}
+		return 1
+	}
+
+	if preOther == "" {
+		_, notIsNumeric := strconv.ParseInt(preSelf, 10, 64)
+		if notIsNumeric == nil {
+			return 1
+		}
+		return -1
+	}
+
+	if preSelf > preOther {
+		return 1
+	}
+
+	return -1
+}
+
 func comparePrereleases(v string, other string) int {
 	// the same pre release!
 	if v == other {
@@ -141,7 +170,7 @@ func comparePrereleases(v string, other string) int {
 		partOtherPre := ""
 		if i < otherPreReleaseLen {
 			partOtherPre = otherPreReleaseMeta[i]
-		}		
+		}
 
 		compare := comparePart(partSelfPre, partOtherPre)
 		// if parts are equals, continue the loop
@@ -151,35 +180,6 @@ func comparePrereleases(v string, other string) int {
 	}
 
 	return 0
-}
-
-func comparePart(preSelf string, preOther string) int {
-	if preSelf == preOther {
-		return 0
-	}
-
-	// if a part is empty, we use the other to decide
-	if preSelf == "" {
-		_, notIsNumeric := strconv.ParseInt(preOther, 10, 64) 
-		if notIsNumeric == nil {
-			return -1
-		}
-		return 1
-	}
-
-	if preOther == "" {
-		_, notIsNumeric := strconv.ParseInt(preSelf, 10, 64) 
-		if notIsNumeric == nil {
-			return 1
-		}
-		return -1
-	}
-
-	if preSelf > preOther {
-		return 1
-	}
-
-	return -1
 }
 
 // Equal tests if two versions are equal.
