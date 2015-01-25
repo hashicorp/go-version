@@ -23,7 +23,7 @@ const VersionRegexpRaw string = `([0-9]+(\.[0-9]+){0,2})` +
 type Version struct {
 	metadata string
 	pre      string
-	segments []int
+	segments []int64
 	si       int
 }
 
@@ -40,16 +40,16 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	segmentsStr := strings.Split(matches[1], ".")
-	segments := make([]int, len(segmentsStr), 3)
+	segments := make([]int64, len(segmentsStr), 3)
 	si := 0
 	for i, str := range segmentsStr {
-		val, err := strconv.ParseInt(str, 10, 32)
+		val, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"Error parsing version: %s", err)
 		}
 
-		segments[i] = int(val)
+		segments[i] = val
 		si += 1
 	}
 	for i := len(segments); i < 3; i++ {
@@ -221,7 +221,7 @@ func (v *Version) Prerelease() string {
 // This excludes any metadata or pre-release information. For example,
 // for a version "1.2.3-beta", segments will return a slice of
 // 1, 2, 3.
-func (v *Version) Segments() []int {
+func (v *Version) Segments() []int64 {
 	return v.segments
 }
 

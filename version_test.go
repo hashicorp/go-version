@@ -161,12 +161,12 @@ func TestVersionPrerelease(t *testing.T) {
 func TestVersionSegments(t *testing.T) {
 	cases := []struct {
 		version  string
-		expected []int
+		expected []int64
 	}{
-		{"1.2.3", []int{1, 2, 3}},
-		{"1.2-beta", []int{1, 2, 0}},
-		{"1-x.Y.0", []int{1, 0, 0}},
-		{"1.2.0-x.Y.0+metadata", []int{1, 2, 0}},
+		{"1.2.3", []int64{1, 2, 3}},
+		{"1.2-beta", []int64{1, 2, 0}},
+		{"1-x.Y.0", []int64{1, 0, 0}},
+		{"1.2.0-x.Y.0+metadata", []int64{1, 2, 0}},
 	}
 
 	for _, tc := range cases {
