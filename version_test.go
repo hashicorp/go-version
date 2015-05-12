@@ -19,6 +19,8 @@ func TestNewVersion(t *testing.T) {
 		{"1.2-beta.5", false},
 		{"\n1.2", true},
 		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3-rc1-with-hypen", false},
 		{"1.2.3.4", true},
 	}
 
