@@ -64,6 +64,16 @@ func NewVersion(v string) (*Version, error) {
 	}, nil
 }
 
+// Must is a helper that wraps a call to a function returning (*Version, error)
+// and panics if error is non-nil.
+func Must(v *Version, err error) *Version {
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
 // Compare compares this version to another version. This
 // returns -1, 0, or 1 if this version is smaller, equal,
 // or larger than the other version, respectively.
