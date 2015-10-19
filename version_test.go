@@ -1,6 +1,7 @@
 package version
 
 import (
+	"bytes"
 	"encoding/json"
 	"reflect"
 	"testing"
@@ -208,35 +209,27 @@ func TestVersionString(t *testing.T) {
 	}
 }
 
-func TestJsonMarshal(t *testing.T) {
+func TestVersionJson(t *testing.T) {
 	type MyStruct struct {
 		Ver *Version
 	}
-	ver, _ := NewVersion("1.2.3")
-	data := MyStruct{Ver: ver}
-	expected := `{"Ver":"1.2.3"}`
-	b, err := json.Marshal(&data)
+	var (
+		ver MyStruct
+		err error
+	)
+	jsBytes := []byte(`{"Ver":"1.2.3"}`)
+	// data -> struct
+	err = json.Unmarshal(jsBytes, &ver)
 	if err != nil {
-		t.Fatalf("expected: json.Marshal to succed\nactual: failed with error: %v", err)
+		t.Fatalf("expected: json.Unmarshal to succeed\nactual: failed with error %v", err)
 	}
-	actual := string(b)
-	if actual != expected {
-		t.Fatalf("expected: %v\nactual: %v", expected, actual)
+	// struct -> data
+	data, err := json.Marshal(&ver)
+	if err != nil {
+		t.Fatalf("expected: json.Marshal to succeed\nactual: failed with error %v", err)
 	}
-}
 
-func TestJsonUnmarshal(t *testing.T) {
-	type MyStruct struct {
-		Ver *Version
-	}
-	ver, _ := NewVersion("1.2.3")
-	expected := MyStruct{Ver: ver}
-	data := []byte(`{"Ver":"1.2.3"}`)
-	var actual MyStruct
-	if err := json.Unmarshal(data, &actual); err != nil {
-		t.Fatalf("expected: json.Unmarshal to succeed\nactual: failed with error: %v", err)
-	}
-	if !reflect.DeepEqual(expected, actual) {
-		t.Fatalf("expected: %v\nactual: %v", expected, actual)
+	if !bytes.Equal(data, jsBytes) {
+		t.Fatalf("expected: %s\nactual: %s", jsBytes, data)
 	}
 }
