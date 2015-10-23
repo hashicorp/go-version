@@ -20,6 +20,20 @@ const VersionRegexpRaw string = `([0-9]+(\.[0-9]+){0,2})` +
 	`(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`?`
 
+type VersionPart int
+
+const (
+	MajorPart VersionPart = iota
+	MinorPart
+	PatchPart
+	PreReleasePart
+	MetadataPart
+)
+
+var partNames = [...]string{
+	"major", "minor", "patch", "prerelease", "metadata",
+}
+
 // Version represents a single version.
 type Version struct {
 	metadata string
@@ -249,6 +263,18 @@ func (v *Version) String() string {
 	}
 
 	return buf.String()
+}
+
+// BumpVersion - increment the indicated part by one
+// part may be one of: MajorPart, MinorPart or PatchPart
+func (v *Version) BumpVersion(part VersionPart) (err error) {
+	switch part {
+	case MajorPart, MinorPart, PatchPart:
+		v.segments[part]++
+	default:
+		err = fmt.Errorf("unable to bump version part %s", partNames[part])
+	}
+	return
 }
 
 // MarshalJSON - implement the json-Marshaler interface
