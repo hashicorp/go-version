@@ -101,7 +101,7 @@ func parseSingle(v string) (*Constraint, error) {
 		return nil, fmt.Errorf("Malformed constraint: %s", v)
 	}
 
-	check, err := NewVersion(matches[2])
+	check, err := New(matches[2])
 	if err != nil {
 		// This is a panic because the regular expression above should
 		// properly validate any version.

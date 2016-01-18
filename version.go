@@ -31,9 +31,9 @@ func init() {
 	versionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
 }
 
-// NewVersion parses the given version and returns a new
+// New parses the given version and returns a new
 // Version.
-func NewVersion(v string) (*Version, error) {
+func New(v string) (*Version, error) {
 	matches := versionRegexp.FindStringSubmatch(v)
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed version: %s", v)

@@ -25,7 +25,7 @@ func TestNewVersion(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		_, err := NewVersion(tc.version)
+		_, err := New(tc.version)
 		if tc.err && err == nil {
 			t.Fatalf("expected error for version: %s", tc.version)
 		} else if !tc.err && err != nil {
@@ -48,12 +48,12 @@ func TestVersionCompare(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v1, err := NewVersion(tc.v1)
+		v1, err := New(tc.v1)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
 
-		v2, err := NewVersion(tc.v2)
+		v2, err := New(tc.v2)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
@@ -89,12 +89,12 @@ func TestComparePreReleases(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v1, err := NewVersion(tc.v1)
+		v1, err := New(tc.v1)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
 
-		v2, err := NewVersion(tc.v2)
+		v2, err := New(tc.v2)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
@@ -122,7 +122,7 @@ func TestVersionMetadata(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc.version)
+		v, err := New(tc.version)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
@@ -147,7 +147,7 @@ func TestVersionPrerelease(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc.version)
+		v, err := New(tc.version)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
@@ -172,7 +172,7 @@ func TestVersionSegments(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc.version)
+		v, err := New(tc.version)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
@@ -194,7 +194,7 @@ func TestVersionString(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc[0])
+		v, err := New(tc[0])
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}

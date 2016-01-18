@@ -57,7 +57,7 @@ func TestConstraintCheck(t *testing.T) {
 			t.Fatalf("err: %s", err)
 		}
 
-		v, err := NewVersion(tc.version)
+		v, err := New(tc.version)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
