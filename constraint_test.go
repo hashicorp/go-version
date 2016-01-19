@@ -98,3 +98,14 @@ func TestConstraintsString(t *testing.T) {
 		}
 	}
 }
+
+func TestFuzzCrashers(t *testing.T) {
+
+	var crashers = []string{
+		"11387778780781445675529500000000000000000",
+	}
+
+	for _, s := range crashers {
+		NewConstraint(s)
+	}
+}
