@@ -50,7 +50,7 @@ func NewVersion(v string) (*Version, error) {
 		}
 
 		segments[i] = int(val)
-		si += 1
+		si++
 	}
 
 	// Even though we could support more than three segments, if we
