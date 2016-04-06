@@ -14,7 +14,7 @@ var versionRegexp *regexp.Regexp
 
 // The raw regular expression string used for testing the validity
 // of a version.
-const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+){0,2})` +
+const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 	`(-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`?`
@@ -40,7 +40,7 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	segmentsStr := strings.Split(matches[1], ".")
-	segments := make([]int, len(segmentsStr), 3)
+	segments := make([]int, len(segmentsStr))
 	si := 0
 	for i, str := range segmentsStr {
 		val, err := strconv.ParseInt(str, 10, 32)
@@ -52,6 +52,10 @@ func NewVersion(v string) (*Version, error) {
 		segments[i] = int(val)
 		si += 1
 	}
+
+	// Even though we could support more than three segments, if we
+	// got less than three, pad it with 0s. This is to cover the basic
+	// default usecase of semver, which is MAJOR.MINOR.PATCH at the minimum
 	for i := len(segments); i < 3; i++ {
 		segments = append(segments, 0)
 	}
