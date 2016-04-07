@@ -38,7 +38,6 @@ func NewVersion(v string) (*Version, error) {
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed version: %s", v)
 	}
-
 	segmentsStr := strings.Split(matches[1], ".")
 	segments := make([]int, len(segmentsStr))
 	si := 0
@@ -110,21 +109,63 @@ func (v *Version) Compare(other *Version) int {
 		return comparePrereleases(preSelf, preOther)
 	}
 
+	// Get the highest specificity, or if they're equal, just use segmentSelf length
+	lS := len(segmentsSelf)
+	lO := len(segmentsOther)
+	hS := lS
+	if lS < lO {
+		hS = lO
+	}
 	// Compare the segments
-	for i := 0; i < len(segmentsSelf); i++ {
+	// Because a constraint could have more/less specificity than the version it's
+	// checking, we need to account for a lopsided or jagged comparison
+	var matched int
+	for i := 0; i < hS; i++ {
+		if i > lS-1 {
+			// This means Self had the lower specificity
+			// Check to see if the remaining segments in Other are all zeros - if not,
+			// it means that Other has to be greater than Self
+			if allZero(segmentsOther[i:]) {
+				// The two were equal - break now
+				break
+			}
+			// Other is greater than Self
+			matched = -1
+			break
+		} else if i > lO-1 {
+			// this means Other had the lower specificity
+			// Check to see if the remaining segments in Self are all zeros - if not,
+			// it means that Self has to be greater than Other
+			if allZero(segmentsSelf[i:]) {
+				break
+			}
+			// Self is greater than Other
+			matched = 1
+			break
+		}
 		lhs := segmentsSelf[i]
 		rhs := segmentsOther[i]
-
 		if lhs == rhs {
 			continue
 		} else if lhs < rhs {
-			return -1
+			matched = -1
+			break
 		} else {
-			return 1
+			matched = 1
+			break
 		}
 	}
 
-	panic("should not be reached")
+	return matched
+}
+
+func allZero(segs []int) bool {
+	for _, s := range segs {
+		if s != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func comparePart(preSelf string, preOther string) int {
@@ -243,7 +284,13 @@ func (v *Version) Segments() []int {
 // and metadata information.
 func (v *Version) String() string {
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "%d.%d.%d", v.segments[0], v.segments[1], v.segments[2])
+	fmtParts := make([]string, len(v.segments))
+	for i, s := range v.segments {
+		// We can ignore err here since we've pre-parsed the values in segments
+		str := strconv.Itoa(s)
+		fmtParts[i] = str
+	}
+	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}
