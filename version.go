@@ -109,38 +109,32 @@ func (v *Version) Compare(other *Version) int {
 		return comparePrereleases(preSelf, preOther)
 	}
 
-	// Get the highest specificity, or if they're equal, just use segmentSelf length
-	lS := len(segmentsSelf)
-	lO := len(segmentsOther)
-	hS := lS
-	if lS < lO {
-		hS = lO
+	// Get the highest specificity (hS), or if they're equal, just use segmentSelf length
+	lenSelf := len(segmentsSelf)
+	lenOther := len(segmentsOther)
+	hS := lenSelf
+	if lenSelf < lenOther {
+		hS = lenOther
 	}
 	// Compare the segments
 	// Because a constraint could have more/less specificity than the version it's
 	// checking, we need to account for a lopsided or jagged comparison
-	var matched int
 	for i := 0; i < hS; i++ {
-		if i > lS-1 {
+		if i > lenSelf-1 {
 			// This means Self had the lower specificity
-			// Check to see if the remaining segments in Other are all zeros - if not,
-			// it means that Other has to be greater than Self
-			if allZero(segmentsOther[i:]) {
-				// The two were equal - break now
-				break
+			// Check to see if the remaining segments in Other are all zeros
+			if !allZero(segmentsOther[i:]) {
+				// if not, it means that Other has to be greater than Self
+				return -1
 			}
-			// Other is greater than Self
-			matched = -1
 			break
-		} else if i > lO-1 {
+		} else if i > lenOther-1 {
 			// this means Other had the lower specificity
-			// Check to see if the remaining segments in Self are all zeros - if not,
-			// it means that Self has to be greater than Other
-			if allZero(segmentsSelf[i:]) {
-				break
+			// Check to see if the remaining segments in Self are all zeros -
+			if !allZero(segmentsSelf[i:]) {
+				//if not, it means that Self has to be greater than Other
+				return 1
 			}
-			// Self is greater than Other
-			matched = 1
 			break
 		}
 		lhs := segmentsSelf[i]
@@ -148,15 +142,14 @@ func (v *Version) Compare(other *Version) int {
 		if lhs == rhs {
 			continue
 		} else if lhs < rhs {
-			matched = -1
-			break
-		} else {
-			matched = 1
-			break
+			return -1
 		}
+		// Otherwis, rhs was > lhs, they're not equal
+		return 1
 	}
 
-	return matched
+	// if we got this far, they're equal
+	return 0
 }
 
 func allZero(segs []int) bool {
