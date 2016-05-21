@@ -279,7 +279,7 @@ func (v *Version) BumpVersion(part VersionPart) (err error) {
 
 // MarshalJSON - implement the json-Marshaler interface
 func (v *Version) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.String())
+	return []byte(fmt.Sprintf(`"%s"`, v.String())), nil
 }
 
 // UnmarshalJSON - implement the json-Unmarshaler interface
@@ -292,6 +292,24 @@ func (v *Version) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 
+	nv, err = NewVersion(verStr)
+	if err != nil {
+		return
+	}
+	*v = *nv
+
+	return
+}
+
+// MarshalYAML - implement the YAML-Marshaler interface (gopkg.in/yaml.v2)
+func (v *Version) MarshalYAML() ([]byte, error) {
+	return []byte(v.String()), nil
+}
+
+// UnmarshalYAML - implement the yaml-Unmarshaler interface (gopkg.in/yaml.v2)
+func (v *Version) UnmarshalYAML(data []byte) (err error) {
+	var nv *Version
+	verStr := string(data)
 	nv, err = NewVersion(verStr)
 	if err != nil {
 		return
