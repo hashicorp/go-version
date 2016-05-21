@@ -302,20 +302,23 @@ func (v *Version) UnmarshalJSON(data []byte) (err error) {
 }
 
 // MarshalYAML - implement the YAML-Marshaler interface (gopkg.in/yaml.v2)
-func (v *Version) MarshalYAML() ([]byte, error) {
-	return []byte(v.String()), nil
+func (v *Version) MarshalYAML() (str interface{}, err error) {
+	str = v.String()
+	return
 }
 
 // UnmarshalYAML - implement the yaml-Unmarshaler interface (gopkg.in/yaml.v2)
-func (v *Version) UnmarshalYAML(data []byte) (err error) {
-	var nv *Version
-	verStr := string(data)
-	fmt.Println("verstr is ", verStr)
-	nv, err = NewVersion(verStr)
-	if err != nil {
+func (v *Version) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
+	var (
+		verStr string
+		nv     *Version
+	)
+	if err = unmarshal(&verStr); err != nil {
+		return
+	}
+	if nv, err = NewVersion(verStr); err != nil {
 		return
 	}
 	*v = *nv
-
 	return
 }
