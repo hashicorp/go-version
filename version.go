@@ -310,6 +310,7 @@ func (v *Version) MarshalYAML() ([]byte, error) {
 func (v *Version) UnmarshalYAML(data []byte) (err error) {
 	var nv *Version
 	verStr := string(data)
+	fmt.Println("verstr is ", verStr)
 	nv, err = NewVersion(verStr)
 	if err != nil {
 		return
