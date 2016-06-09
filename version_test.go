@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
-
-	"gopkg.in/yaml.v2"
 )
 
 func TestNewVersion(t *testing.T) {
@@ -269,25 +267,5 @@ func TestVersionJSON(t *testing.T) {
 
 	if !bytes.Equal(data, jsBytes) {
 		t.Fatalf("expected: %s\nactual: %s", jsBytes, data)
-	}
-}
-
-func TestVersionYAML(t *testing.T) {
-	type MyStruct struct {
-		Ver *Version `yaml:"version"`
-	}
-	var thing MyStruct
-	yamlText := []byte(`version: 1.1.1`)
-	err := yaml.Unmarshal(yamlText, &thing)
-	if err != nil {
-		t.Fatalf("failed to unmarshal yaml: %v", err)
-	}
-	thing.Ver.BumpVersion(PatchPart)
-	data, err := yaml.Marshal(&thing)
-	if err != nil {
-		t.Fatalf("yaml.UnMarshal did not succeed: %v", err)
-	}
-	if !bytes.Equal(data, []byte("version: 1.1.2\n")) {
-		t.Fatalf("expected: version: 1.1.2\\n, actual: %s", string(data))
 	}
 }
