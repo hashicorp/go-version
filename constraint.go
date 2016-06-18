@@ -34,6 +34,8 @@ func init() {
 		">=": constraintGreaterThanEqual,
 		"<=": constraintLessThanEqual,
 		"~>": constraintPessimistic,
+		"^":  constraintCaret,
+		"~":  constraintTilde,
 	}
 
 	ops := make([]string, 0, len(constraintOperators))
@@ -175,4 +177,30 @@ func constraintPessimistic(v, c *Version) bool {
 
 	// If nothing has rejected the version by now, it's valid
 	return true
+}
+
+func constraintCaret(v, c *Version) bool {
+	segments := c.Segments()
+	if segments[MajorPart] > 0 {
+		upperConstraint, _ := NewVersion(fmt.Sprintf("%d.%d.%d", segments[MajorPart]+1, 0, 0))
+		return constraintGreaterThanEqual(v, c) && constraintLessThan(v, upperConstraint)
+	}
+	if segments[MinorPart] > 0 {
+		upperConstraint, _ := NewVersion(fmt.Sprintf("%d.%d.%d", 0, segments[MinorPart]+1, 0))
+		return constraintGreaterThanEqual(v, c) && constraintLessThan(v, upperConstraint)
+	}
+	return constraintEqual(v, c)
+}
+
+func constraintTilde(v, c *Version) bool {
+	segments := c.Segments()
+	if segments[MajorPart] > 0 {
+		upperConstraint, _ := NewVersion(fmt.Sprintf("%d.%d.%d", segments[MajorPart], segments[MinorPart]+1, 0))
+		return constraintGreaterThanEqual(v, c) && constraintLessThan(v, upperConstraint)
+	}
+	if segments[MinorPart] > 0 {
+		upperConstraint, _ := NewVersion(fmt.Sprintf("%d.%d.%d", 0, segments[MinorPart]+1, 0))
+		return constraintGreaterThanEqual(v, c) && constraintLessThan(v, upperConstraint)
+	}
+	return constraintEqual(v, c)
 }

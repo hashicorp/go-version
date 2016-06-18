@@ -19,6 +19,16 @@ const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 	`(\+([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*))?` +
 	`?`
 
+type VersionPart int
+
+const (
+	MajorPart VersionPart = iota
+	MinorPart
+	PatchPart
+	PreReleasePart
+	MetadataPart
+)
+
 // Version represents a single version.
 type Version struct {
 	metadata string
