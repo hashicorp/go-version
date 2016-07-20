@@ -28,6 +28,8 @@ func TestNewVersion(t *testing.T) {
 		{"1.2.3.4", false},
 		{"v1.2.3", false},
 		{"foo1.2.3", true},
+		{"1.7rc2", false},
+		{"v1.7rc2", false},
 	}
 
 	for _, tc := range cases {
@@ -60,6 +62,8 @@ func TestVersionCompare(t *testing.T) {
 		{"v1.2", "v1.2.0.0.1", -1},
 		{"v1.2.0.0", "v1.2.0.0.1", -1},
 		{"v1.2.3.0", "v1.2.3.4", -1},
+		{"1.7rc2", "1.7rc1", 1},
+		{"1.7rc2", "1.7", -1},
 	}
 
 	for _, tc := range cases {
