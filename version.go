@@ -152,6 +152,33 @@ func (v *Version) Compare(other *Version) int {
 	return 0
 }
 
+// UnmarshalYAML implements the yaml.Unmarshaler interface
+// Unmarshals a string into a Version
+func (v *Version) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	s := ""
+	unmarshal(&s)
+
+	ver, err := NewVersion(s)
+	if err != nil {
+		return err
+	}
+
+	*v = *ver
+	return nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+// Unmarshals a string into a Version
+func (v *Version) UnmarshalJSON(data []byte) error {
+	ver, err := NewVersion(string(data))
+	if err != nil {
+		return err
+	}
+
+	*v = *ver
+	return nil
+}
+
 func allZero(segs []int) bool {
 	for _, s := range segs {
 		if s != 0 {
