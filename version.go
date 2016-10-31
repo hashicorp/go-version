@@ -23,7 +23,7 @@ const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 type Version struct {
 	metadata string
 	pre      string
-	segments []int
+	segments []int64
 	si       int
 }
 
@@ -39,16 +39,16 @@ func NewVersion(v string) (*Version, error) {
 		return nil, fmt.Errorf("Malformed version: %s", v)
 	}
 	segmentsStr := strings.Split(matches[1], ".")
-	segments := make([]int, len(segmentsStr))
+	segments := make([]int64, len(segmentsStr))
 	si := 0
 	for i, str := range segmentsStr {
-		val, err := strconv.ParseInt(str, 10, 32)
+		val, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"Error parsing version: %s", err)
 		}
 
-		segments[i] = int(val)
+		segments[i] = int64(val)
 		si++
 	}
 
@@ -89,8 +89,8 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	segmentsSelf := v.Segments()
-	segmentsOther := other.Segments()
+	segmentsSelf := v.Segments64()
+	segmentsOther := other.Segments64()
 
 	// If the segments are the same, we must compare on prerelease info
 	if reflect.DeepEqual(segmentsSelf, segmentsOther) {
@@ -152,7 +152,7 @@ func (v *Version) Compare(other *Version) int {
 	return 0
 }
 
-func allZero(segs []int) bool {
+func allZero(segs []int64) bool {
 	for _, s := range segs {
 		if s != 0 {
 			return false
@@ -264,12 +264,25 @@ func (v *Version) Prerelease() string {
 	return v.pre
 }
 
-// Segments returns the numeric segments of the version as a slice.
+// Segments returns the numeric segments of the version as a slice of ints.
 //
 // This excludes any metadata or pre-release information. For example,
 // for a version "1.2.3-beta", segments will return a slice of
 // 1, 2, 3.
 func (v *Version) Segments() []int {
+	segmentSlice := make([]int, len(v.segments))
+	for i, v := range v.segments {
+		segmentSlice[i] = int(v)
+	}
+	return segmentSlice
+}
+
+// Segments64 returns the numeric segments of the version as a slice of int64s.
+//
+// This excludes any metadata or pre-release information. For example,
+// for a version "1.2.3-beta", segments will return a slice of
+// 1, 2, 3.
+func (v *Version) Segments64() []int64 {
 	return v.segments
 }
 
@@ -280,7 +293,7 @@ func (v *Version) String() string {
 	fmtParts := make([]string, len(v.segments))
 	for i, s := range v.segments {
 		// We can ignore err here since we've pre-parsed the values in segments
-		str := strconv.Itoa(s)
+		str := strconv.FormatInt(s, 10)
 		fmtParts[i] = str
 	}
 	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
