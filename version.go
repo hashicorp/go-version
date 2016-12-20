@@ -306,3 +306,7 @@ func (v *Version) String() string {
 
 	return buf.String()
 }
+
+func (v *Version) ToBuilder() *Builder {
+	return &Builder{Version: *v}
+}
