@@ -108,6 +108,7 @@ func TestComparePreReleases(t *testing.T) {
 		{"v1.2-beta.2", "v1.2-beta.2", 0},
 		{"v1.2-beta.1", "v1.2-beta.2", -1},
 		{"v3.2-alpha.1", "v3.2-alpha", 1},
+		{"v3.2-rc.1-1-g123", "v3.2-rc.2", 1},
 	}
 
 	for _, tc := range cases {
