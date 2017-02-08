@@ -17,7 +17,7 @@ func TestCollection(t *testing.T) {
 
 	versions := make([]*Version, len(versionsRaw))
 	for i, raw := range versionsRaw {
-		v, err := NewVersion(raw)
+		v, err := New(raw)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}
