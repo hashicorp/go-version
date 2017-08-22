@@ -1,6 +1,8 @@
 package version
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -38,6 +40,53 @@ func TestNewVersion(t *testing.T) {
 			t.Fatalf("expected error for version: %s", tc.version)
 		} else if !tc.err && err != nil {
 			t.Fatalf("error for version %s: %s", tc.version, err)
+		}
+	}
+}
+
+func TestJSON(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"1.2.3", false},
+		{"1.0", false},
+		{"1", false},
+		{"1.2.beta", true},
+		{"foo", true},
+		{"1.2-5", false},
+		{"1.2-beta.5", false},
+		{"\n1.2", true},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"v1.2.3", false},
+		{"foo1.2.3", true},
+		{"1.7rc2", false},
+		{"v1.7rc2", false},
+	}
+
+	for _, tc := range cases {
+		b, err := json.Marshal(tc.version)
+		if err != nil {
+			t.Fatal(err)
+		}
+		v := new(Version)
+		err = json.Unmarshal(b, v)
+		if tc.err && err == nil {
+			t.Fatalf("expected error for version: %s", tc.version)
+		} else if !tc.err && err != nil {
+			t.Fatalf("error for version %s: %s", tc.version, err)
+		}
+
+		j, err := json.Marshal(v)
+		if bytes.Compare(j, []byte("\""+v.String()+"\"")) != 0 {
+			t.Fatalf("json.Marshal(%s) failed: expected %s got %s", v.String(), tc.version, string(j))
 		}
 	}
 }

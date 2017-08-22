@@ -333,11 +333,11 @@ func (v *Version) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	v = p
+	*v = *p
 	return nil
 }
 
-// MarshalJSONimplements the enconding/json.MarshalJSON interface
+// MarshalJSON implements the enconding/json.MarshalJSON interface
 func (v Version) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.String())
 }
