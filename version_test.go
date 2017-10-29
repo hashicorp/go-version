@@ -96,8 +96,10 @@ func TestComparePreReleases(t *testing.T) {
 	}{
 		{"1.2-beta.2", "1.2-beta.2", 0},
 		{"1.2-beta.1", "1.2-beta.2", -1},
+		{"1.2-beta.2", "1.2-beta.11", -1},
 		{"3.2-alpha.1", "3.2-alpha", 1},
 		{"1.2-beta.2", "1.2-beta.1", 1},
+		{"1.2-beta.11", "1.2-beta.2", 1},
 		{"1.2-beta", "1.2-beta.3", -1},
 		{"1.2-alpha", "1.2-beta.3", -1},
 		{"1.2-beta", "1.2-alpha.3", 1},
