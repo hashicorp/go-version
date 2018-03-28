@@ -1,6 +1,8 @@
 package version
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -261,5 +263,66 @@ func TestVersionString(t *testing.T) {
 		if actual != expected {
 			t.Fatalf("expected: %s\nactual: %s", expected, actual)
 		}
+	}
+}
+
+func TestBumpVersion(t *testing.T) {
+	cases := []struct {
+		version string
+		part    VersionPart
+		result  string
+		err     bool
+	}{
+		{"1.1.1", MajorPart, "2.1.1", false},
+		{"1.1.1", MinorPart, "1.2.1", false},
+		{"1.1.1", PatchPart, "1.1.2", false},
+		{"2", MinorPart, "2.1.0", false},
+		{"2.2", PatchPart, "2.2.1", false},
+		{"1.1.0-beta1", MinorPart, "1.2.0-beta1", false},
+		{"1.1.0-beta1", PreReleasePart, "", true},
+		{"1.1.0-beta1+foo", MetadataPart, "", true},
+	}
+
+	for _, tc := range cases {
+		v, err := NewVersion(tc.version)
+		if err != nil {
+			t.Fatalf("error parsing version %s", tc.version)
+		}
+		err = v.BumpVersion(tc.part)
+		if tc.err && err == nil {
+			t.Fatalf("expected error for version: %s", tc.version)
+		} else if !tc.err && err != nil {
+			t.Fatalf("error for version %s: %s", tc.version, err)
+		}
+		if !tc.err {
+			if v.String() != tc.result {
+				t.Fatalf("BumpVersion %d, expecting: %s\nfound %s", tc.part, tc.result, v.String())
+			}
+		}
+	}
+}
+
+func TestVersionJSON(t *testing.T) {
+	type MyStruct struct {
+		Ver *Version
+	}
+	var (
+		ver MyStruct
+		err error
+	)
+	jsBytes := []byte(`{"Ver":"1.2.3"}`)
+	// data -> struct
+	err = json.Unmarshal(jsBytes, &ver)
+	if err != nil {
+		t.Fatalf("expected: json.Unmarshal to succeed\nactual: failed with error %v", err)
+	}
+	// struct -> data
+	data, err := json.Marshal(&ver)
+	if err != nil {
+		t.Fatalf("expected: json.Marshal to succeed\nactual: failed with error %v", err)
+	}
+
+	if !bytes.Equal(data, jsBytes) {
+		t.Fatalf("expected: %s\nactual: %s", jsBytes, data)
 	}
 }

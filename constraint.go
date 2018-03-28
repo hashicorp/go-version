@@ -1,6 +1,7 @@
 package version
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -201,4 +202,52 @@ func constraintPessimistic(v, c *Version) bool {
 
 	// If nothing has rejected the version by now, it's valid
 	return true
+}
+
+// MarshalJSON - implement the json-Marshaler interface
+func (c *Constraints) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
+}
+
+// UnmarshalJSON - implement the json-Unmarshaler interface
+func (c *Constraints) UnmarshalJSON(data []byte) (err error) {
+	var constraintStr string
+	var nc Constraints
+
+	err = json.Unmarshal(data, &constraintStr)
+	if err != nil {
+		return
+	}
+
+	nc, err = NewConstraint(constraintStr)
+	if err != nil {
+		return
+	}
+	*c = nc
+
+	return
+}
+
+// MarshalYAML - implement the YAML-Marshaler interface (gopkg.in/yaml.v2)
+func (c *Constraints) MarshalYAML() (str interface{}, err error) {
+	str = c.String()
+	return
+}
+
+// UnmarshalYAML - implement the yaml-Unmarshaler interface (gopkg.in/yaml.v2)
+func (c *Constraints) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
+	var constraintStr string
+	var nc Constraints
+
+	if err = unmarshal(&constraintStr); err != nil {
+		return
+	}
+
+	nc, err = NewConstraint(constraintStr)
+	if err != nil {
+		return
+	}
+	*c = nc
+
+	return
 }

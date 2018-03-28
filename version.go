@@ -2,6 +2,7 @@ package version
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -18,6 +19,20 @@ const VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 	`(-?([0-9A-Za-z\-~]+(\.[0-9A-Za-z\-~]+)*))?` +
 	`(\+([0-9A-Za-z\-~]+(\.[0-9A-Za-z\-~]+)*))?` +
 	`?`
+
+type VersionPart int
+
+const (
+	MajorPart VersionPart = iota
+	MinorPart
+	PatchPart
+	PreReleasePart
+	MetadataPart
+)
+
+var partNames = [...]string{
+	"major", "minor", "patch", "prerelease", "metadata",
+}
 
 // Version represents a single version.
 type Version struct {
@@ -323,4 +338,62 @@ func (v *Version) String() string {
 	}
 
 	return buf.String()
+}
+
+// BumpVersion - increment the indicated part by one
+// part may be one of: MajorPart, MinorPart or PatchPart
+func (v *Version) BumpVersion(part VersionPart) (err error) {
+	switch part {
+	case MajorPart, MinorPart, PatchPart:
+		v.segments[part]++
+	default:
+		err = fmt.Errorf("unable to bump version part %s", partNames[part])
+	}
+	return
+}
+
+// MarshalJSON - implement the json-Marshaler interface
+func (v *Version) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, v.String())), nil
+}
+
+// UnmarshalJSON - implement the json-Unmarshaler interface
+func (v *Version) UnmarshalJSON(data []byte) (err error) {
+	var verStr string
+	var nv *Version
+
+	err = json.Unmarshal(data, &verStr)
+	if err != nil {
+		return
+	}
+
+	nv, err = NewVersion(verStr)
+	if err != nil {
+		return
+	}
+	*v = *nv
+
+	return
+}
+
+// MarshalYAML - implement the YAML-Marshaler interface (gopkg.in/yaml.v2)
+func (v *Version) MarshalYAML() (str interface{}, err error) {
+	str = v.String()
+	return
+}
+
+// UnmarshalYAML - implement the yaml-Unmarshaler interface (gopkg.in/yaml.v2)
+func (v *Version) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
+	var (
+		verStr string
+		nv     *Version
+	)
+	if err = unmarshal(&verStr); err != nil {
+		return
+	}
+	if nv, err = NewVersion(verStr); err != nil {
+		return
+	}
+	*v = *nv
+	return
 }

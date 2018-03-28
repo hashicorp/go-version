@@ -1,6 +1,8 @@
 package version
 
 import (
+	"bytes"
+	"encoding/json"
 	"testing"
 )
 
@@ -122,5 +124,30 @@ func TestConstraintsString(t *testing.T) {
 			t.Fatalf("Constraint: %s\nExpected: %#v\nActual: %s",
 				tc.constraint, expected, actual)
 		}
+	}
+}
+
+func TestConstraintsJson(t *testing.T) {
+	type MyStruct struct {
+		MustVer Constraints
+	}
+	var (
+		vc  MyStruct
+		err error
+	)
+	jsBytes := []byte(`{"MustVer":"=1.2, =1.3"}`)
+	// data -> struct
+	err = json.Unmarshal(jsBytes, &vc)
+	if err != nil {
+		t.Fatalf("expected: json.Unmarshal to succeed\nactual: failed with error %v", err)
+	}
+	// struct -> data
+	data, err := json.Marshal(&vc)
+	if err != nil {
+		t.Fatalf("expected: json.Marshal to succeed\nactual: failed with error %v", err)
+	}
+
+	if !bytes.Equal(data, jsBytes) {
+		t.Fatalf("expected: %s\nactual: %s", jsBytes, data)
 	}
 }
