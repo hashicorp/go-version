@@ -14,6 +14,7 @@ func TestNewVersion(t *testing.T) {
 		{"1.0", false},
 		{"1", false},
 		{"1.2.beta", true},
+		{"1.21.beta", true},
 		{"foo", true},
 		{"1.2-5", false},
 		{"1.2-beta.5", false},
@@ -171,6 +172,7 @@ func TestVersionPrerelease(t *testing.T) {
 		{"1.2.3", ""},
 		{"1.2-beta", "beta"},
 		{"1.2.0-x.Y.0", "x.Y.0"},
+		{"1.2.0-7.Y.0", "7.Y.0"},
 		{"1.2.0-x.Y.0+metadata", "x.Y.0"},
 		{"1.2.0-metadata-1.2.0+metadata~dist", "metadata-1.2.0"},
 	}
