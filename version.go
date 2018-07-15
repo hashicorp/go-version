@@ -60,7 +60,7 @@ func NewVersion(v string) (*Version, error) {
 	}
 
 	pre := matches[7]
-	if pre == ""{
+	if pre == "" {
 		pre = matches[4]
 	}
 
