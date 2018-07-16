@@ -175,6 +175,7 @@ func TestVersionPrerelease(t *testing.T) {
 		{"1.2.0-7.Y.0", "7.Y.0"},
 		{"1.2.0-x.Y.0+metadata", "x.Y.0"},
 		{"1.2.0-metadata-1.2.0+metadata~dist", "metadata-1.2.0"},
+		{"17.03.0-ce", "ce"}, // zero-padded fields
 	}
 
 	for _, tc := range cases {
@@ -201,6 +202,7 @@ func TestVersionSegments(t *testing.T) {
 		{"1-x.Y.0", []int{1, 0, 0}},
 		{"1.2.0-x.Y.0+metadata", []int{1, 2, 0}},
 		{"1.2.0-metadata-1.2.0+metadata~dist", []int{1, 2, 0}},
+		{"17.03.0-ce", []int{17, 3, 0}}, // zero-padded fields
 	}
 
 	for _, tc := range cases {
@@ -259,6 +261,7 @@ func TestVersionString(t *testing.T) {
 		{"1.2.0-x.Y.0", "1.2.0-x.Y.0"},
 		{"1.2.0-x.Y.0+metadata", "1.2.0-x.Y.0+metadata"},
 		{"1.2.0-metadata-1.2.0+metadata~dist", "1.2.0-metadata-1.2.0+metadata~dist"},
+		{"17.03.0-ce", "17.3.0-ce"}, // zero-padded fields
 	}
 
 	for _, tc := range cases {
@@ -271,6 +274,9 @@ func TestVersionString(t *testing.T) {
 		expected := tc[1]
 		if actual != expected {
 			t.Fatalf("expected: %s\nactual: %s", expected, actual)
+		}
+		if actual := v.Original(); actual != tc[0] {
+			t.Fatalf("expected original: %q\nactual: %q", tc[0], actual)
 		}
 	}
 }
