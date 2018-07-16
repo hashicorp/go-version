@@ -306,7 +306,9 @@ func (v *Version) Segments() []int {
 // for a version "1.2.3-beta", segments will return a slice of
 // 1, 2, 3.
 func (v *Version) Segments64() []int64 {
-	return v.segments
+	result := make([]int64, len(v.segments))
+	copy(result, v.segments)
+	return result
 }
 
 // String returns the full version string included pre-release

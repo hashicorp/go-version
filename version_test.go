@@ -240,6 +240,15 @@ func TestVersionSegments64(t *testing.T) {
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("expected: %#v\nactual: %#v", expected, actual)
 		}
+
+		{
+			expected := actual[0]
+			actual[0]++
+			actual = v.Segments64()
+			if actual[0] != expected {
+				t.Fatalf("Segments64 is mutable")
+			}
+		}
 	}
 }
 
