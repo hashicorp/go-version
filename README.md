@@ -8,6 +8,35 @@ versions, can increment versions, etc.
 
 Versions used with go-version must follow [SemVer](http://semver.org/).
 
+## Why fork?
+
+add * support. example:
+```
+package main
+
+import (
+    "github.com/baiyunping333/go-version"
+    "fmt"
+)
+
+func main() {
+    v1, err := version.NewVersion("1.2.33")
+
+    // Constraints example.
+    constraints, err := version.NewConstraint("*")
+    if err != nil {
+        fmt.Println(err)
+    }
+    if constraints.Check(v1) {
+        fmt.Printf("%s satisfies constraints %s", v1, constraints)
+    } else {
+        fmt.Printf("%s unsatisfies constraints %s", v1, constraints)
+    }
+}
+
+```
+output: `1.2.33 satisfies constraints *`
+
 ## Installation and Usage
 
 Package documentation can be found on
