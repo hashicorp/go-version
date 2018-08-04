@@ -27,7 +27,8 @@ var constraintRegexp *regexp.Regexp
 
 func init() {
 	constraintOperators = map[string]constraintFunc{
-		"":   constraintEqual,
+		"":   constraintAny,
+		"*":  constraintEqual,
 		"=":  constraintEqual,
 		"!=": constraintNotEqual,
 		">":  constraintGreaterThan,
@@ -97,6 +98,13 @@ func (c *Constraint) String() string {
 }
 
 func parseSingle(v string) (*Constraint, error) {
+	if v == "*" {
+		return &Constraint{
+			f:        constraintOperators["*"],
+			check:    nil,
+			original: v,
+		}, nil
+	}
 	matches := constraintRegexp.FindStringSubmatch(v)
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed constraint: %s", v)
@@ -138,6 +146,9 @@ func prereleaseCheck(v, c *Version) bool {
 // Constraint functions
 //-------------------------------------------------------------------
 
+func constraintAny(v, c *Version) bool {
+	return true
+}
 func constraintEqual(v, c *Version) bool {
 	return v.Equal(c)
 }
