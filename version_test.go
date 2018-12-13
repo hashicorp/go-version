@@ -10,6 +10,7 @@ func TestNewVersion(t *testing.T) {
 		version string
 		err     bool
 	}{
+		{"", true},
 		{"1.2.3", false},
 		{"1.0", false},
 		{"1", false},
@@ -30,16 +31,16 @@ func TestNewVersion(t *testing.T) {
 		{"1.2.3.4", false},
 		{"v1.2.3", false},
 		{"foo1.2.3", true},
-		{"1.7rc2", false},
-		{"v1.7rc2", false},
+		{"1.7rc2", true},
+		{"v1.7rc2", true},
 	}
 
 	for _, tc := range cases {
 		_, err := NewVersion(tc.version)
 		if tc.err && err == nil {
-			t.Fatalf("expected error for version: %s", tc.version)
+			t.Fatalf("expected error for version: %q", tc.version)
 		} else if !tc.err && err != nil {
-			t.Fatalf("error for version %s: %s", tc.version, err)
+			t.Fatalf("error for version %q: %s", tc.version, err)
 		}
 	}
 }
@@ -64,8 +65,6 @@ func TestVersionCompare(t *testing.T) {
 		{"v1.2", "v1.2.0.0.1", -1},
 		{"v1.2.0.0", "v1.2.0.0.1", -1},
 		{"v1.2.3.0", "v1.2.3.4", -1},
-		{"1.7rc2", "1.7rc1", 1},
-		{"1.7rc2", "1.7", -1},
 		{"1.2.0", "1.2.0-X-1.2.0+metadata~dist", 1},
 	}
 
