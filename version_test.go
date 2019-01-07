@@ -10,6 +10,7 @@ func TestNewVersion(t *testing.T) {
 		version string
 		err     bool
 	}{
+		{"", true},
 		{"1.2.3", false},
 		{"1.0", false},
 		{"1", false},
@@ -32,14 +33,56 @@ func TestNewVersion(t *testing.T) {
 		{"foo1.2.3", true},
 		{"1.7rc2", false},
 		{"v1.7rc2", false},
+		{"1.0-", false},
 	}
 
 	for _, tc := range cases {
 		_, err := NewVersion(tc.version)
 		if tc.err && err == nil {
-			t.Fatalf("expected error for version: %s", tc.version)
+			t.Fatalf("expected error for version: %q", tc.version)
 		} else if !tc.err && err != nil {
-			t.Fatalf("error for version %s: %s", tc.version, err)
+			t.Fatalf("error for version %q: %s", tc.version, err)
+		}
+	}
+}
+
+func TestNewSemver(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"", true},
+		{"1.2.3", false},
+		{"1.0", false},
+		{"1", false},
+		{"1.2.beta", true},
+		{"1.21.beta", true},
+		{"foo", true},
+		{"1.2-5", false},
+		{"1.2-beta.5", false},
+		{"\n1.2", true},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0-X-1.2.0+metadata~dist", false},
+		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"v1.2.3", false},
+		{"foo1.2.3", true},
+		{"1.7rc2", true},
+		{"v1.7rc2", true},
+		{"1.0-", true},
+	}
+
+	for _, tc := range cases {
+		_, err := NewSemver(tc.version)
+		if tc.err && err == nil {
+			t.Fatalf("expected error for version: %q", tc.version)
+		} else if !tc.err && err != nil {
+			t.Fatalf("error for version %q: %s", tc.version, err)
 		}
 	}
 }
@@ -87,6 +130,44 @@ func TestVersionCompare(t *testing.T) {
 				"%s <=> %s\nexpected: %d\nactual: %d",
 				tc.v1, tc.v2,
 				expected, actual)
+		}
+	}
+}
+
+func TestVersionCompare_versionAndSemver(t *testing.T) {
+	cases := []struct {
+		versionRaw string
+		semverRaw  string
+		expected   int
+	}{
+		{"0.0.2", "0.0.2", 0},
+		{"1.0.2alpha", "1.0.2-alpha", 0},
+		{"v1.2+foo", "v1.2+beta", 0},
+		{"v1.2", "v1.2+meta", 0},
+		{"1.2", "1.2-beta", 1},
+		{"v1.2", "v1.2-beta", 1},
+		{"1.2.3", "1.4.5", -1},
+		{"v1.2", "v1.2.0.0.1", -1},
+		{"v1.0.3-", "v1.0.3", -1},
+	}
+
+	for _, tc := range cases {
+		ver, err := NewVersion(tc.versionRaw)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		semver, err := NewSemver(tc.semverRaw)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := ver.Compare(semver)
+		if actual != tc.expected {
+			t.Fatalf(
+				"%s <=> %s\nexpected: %d\n actual: %d",
+				tc.versionRaw, tc.semverRaw, tc.expected, actual,
+			)
 		}
 	}
 }
