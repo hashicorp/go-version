@@ -77,7 +77,7 @@ func (cs Constraints) Check(v *Version) bool {
 	return true
 }
 
-// Returns the string format of the constraints
+// String returns the string format of the constraints
 func (cs Constraints) String() string {
 	csStr := make([]string, len(cs))
 	for i, c := range cs {
