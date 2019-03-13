@@ -15,9 +15,9 @@ type Constraint struct {
 	original string
 }
 
-// Constraints is a slice of constraints. We make a custom type so that
-// we can add methods to it.
-type Constraints []*Constraint
+// Constraints is a 2D slice of constraints. We make a custom type so
+// that we can add methods to it.
+type Constraints [][]*Constraint
 
 type constraintFunc func(v, c *Version) bool
 
@@ -49,42 +49,60 @@ func init() {
 }
 
 // NewConstraint will parse one or more constraints from the given
-// constraint string. The string must be a comma-separated list of
-// constraints.
-func NewConstraint(v string) (Constraints, error) {
-	vs := strings.Split(v, ",")
-	result := make([]*Constraint, len(vs))
-	for i, single := range vs {
-		c, err := parseSingle(single)
-		if err != nil {
-			return nil, err
-		}
+// constraint string. The string must be a comma or pipe separated
+// list of constraints.
+func NewConstraint(cs string) (Constraints, error) {
+	ors := strings.Split(cs, "||")
+	or := make([][]*Constraint, len(ors))
+	for k, v := range ors {
+		vs := strings.Split(v, ",")
+		result := make([]*Constraint, len(vs))
+		for i, single := range vs {
+			c, err := parseSingle(single)
+			if err != nil {
+				return nil, err
+			}
 
-		result[i] = c
+			result[i] = c
+		}
+		or[k] = result
 	}
 
-	return Constraints(result), nil
+	return Constraints(or), nil
 }
 
 // Check tests if a version satisfies all the constraints.
 func (cs Constraints) Check(v *Version) bool {
-	for _, c := range cs {
-		if !c.Check(v) {
-			return false
+	for _, o := range cs {
+		ok := true
+		for _, c := range o {
+			if !c.Check(v) {
+				ok = false
+				break
+			}
+		}
+
+		if ok {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 // Returns the string format of the constraints
 func (cs Constraints) String() string {
-	csStr := make([]string, len(cs))
-	for i, c := range cs {
-		csStr[i] = c.String()
+	orStr := make([]string, len(cs))
+	for i, o := range cs {
+		csStr := make([]string, len(o))
+		for j, c := range o {
+			csStr[j] = c.String()
+		}
+
+		orStr[i] = strings.Join(csStr, ",")
 	}
 
-	return strings.Join(csStr, ",")
+	return strings.Join(orStr, "||")
 }
 
 // Check tests if a constraint is validated by the given version.
