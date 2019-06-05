@@ -124,19 +124,12 @@ func (v *Version) Compare(other *Version) int {
 
 	// If the segments are the same, we must compare on prerelease info
 	if reflect.DeepEqual(segmentsSelf, segmentsOther) {
-		preSelf := v.Prerelease()
-		preOther := other.Prerelease()
-		if preSelf == "" && preOther == "" {
-			return 0
+		prereleaseVal := comparePrereleasesAndMeta(v.Prerelease(), other.Prerelease())
+		// if prereleases are the same, compare on metadata
+		if prereleaseVal == 0 {
+			return comparePrereleasesAndMeta(v.Metadata(), other.Metadata())
 		}
-		if preSelf == "" {
-			return 1
-		}
-		if preOther == "" {
-			return -1
-		}
-
-		return comparePrereleases(preSelf, preOther)
+		return prereleaseVal
 	}
 
 	// Get the highest specificity (hS), or if they're equal, just use segmentSelf length
@@ -238,7 +231,7 @@ func comparePart(preSelf string, preOther string) int {
 	return -1
 }
 
-func comparePrereleases(v string, other string) int {
+func comparePrereleasesAndMeta(v string, other string) int {
 	// the same pre release!
 	if v == other {
 		return 0
