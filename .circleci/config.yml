@@ -25,8 +25,6 @@ jobs:
           keys:
             - go-version-modcache-v1-{{ checksum "go.mod" }}
 
-      - run: go mod download
-
       # Save go module cache if the go.mod file has changed
       - save_cache:
           key: go-version-modcache-v1-{{ checksum "go.mod" }}
