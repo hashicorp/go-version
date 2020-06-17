@@ -172,6 +172,32 @@ func TestVersionCompare_versionAndSemver(t *testing.T) {
 	}
 }
 
+func TestVersionEqual_nil(t *testing.T) {
+	mustVersion := func(v string) *Version {
+		ver, err := NewVersion(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ver
+	}
+	cases := []struct {
+		leftVersion  *Version
+		rightVersion *Version
+		expected     bool
+	}{
+		{mustVersion("1.0.0"), nil, false},
+		{nil, mustVersion("1.0.0"), false},
+		{nil, nil, true},
+	}
+
+	for _, tc := range cases {
+		given := tc.leftVersion.Equal(tc.rightVersion)
+		if given != tc.expected {
+			t.Fatalf("expected Equal to nil to be %t", tc.expected)
+		}
+	}
+}
+
 func TestComparePreReleases(t *testing.T) {
 	cases := []struct {
 		v1       string
