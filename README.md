@@ -14,12 +14,12 @@ Versions used with go-version must follow [SemVer](http://semver.org/).
 ## Installation and Usage
 
 Package documentation can be found on
-[GoDoc](http://godoc.org/github.com/hashicorp/go-version).
+[GoDoc](http://godoc.org/github.com/6543/go-version).
 
 Installation can be done with a normal `go get`:
 
 ```
-$ go get github.com/hashicorp/go-version
+$ go get github.com/6543/go-version
 ```
 
 #### Version Parsing and Comparison
