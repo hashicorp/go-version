@@ -167,7 +167,7 @@ func (v *Version) Compare(other *Version) int {
 			// this means Other had the lower specificity
 			// Check to see if the remaining segments in Self are all zeros -
 			if !allZero(segmentsSelf[i:]) {
-				//if not, it means that Self has to be greater than Other
+				// if not, it means that Self has to be greater than Other
 				return 1
 			}
 			break
@@ -262,7 +262,7 @@ func comparePrereleases(v string, other string) int {
 	}
 
 	// loop for parts to find the first difference
-	for i := 0; i < biggestLen; i = i + 1 {
+	for i := 0; i < biggestLen; i++ {
 		partSelfPre := ""
 		if i < selfPreReleaseLen {
 			partSelfPre = selfPreReleaseMeta[i]
@@ -371,7 +371,7 @@ func (v *Version) String() string {
 		str := strconv.FormatInt(s, 10)
 		fmtParts[i] = str
 	}
-	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
+	fmt.Fprint(&buf, strings.Join(fmtParts, "."))
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}

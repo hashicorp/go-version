@@ -1,6 +1,8 @@
 # Versioning Library for Go
 ![Build Status](https://github.com/6543/go-version/workflows/Release/badge.svg)
+[![License: MPL](https://img.shields.io/badge/License-MPL2-red.svg)](https://opensource.org/licenses/MPL-2.0)
 [![GoDoc](https://godoc.org/github.com/6543/go-version?status.svg)](https://godoc.org/github.com/6543/go-version)
+[![Go Report Card](https://goreportcard.com/badge/github.com/6543/go-version)](https://goreportcard.com/report/github.com/6543/go-version)
 
 go-version is a library for parsing versions and version constraints,
 and verifying versions against a set of constraints. go-version
