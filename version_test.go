@@ -35,12 +35,20 @@ func TestNewVersion(t *testing.T) {
 		{"2.29.0.rc0.261.g7178c9af9c", false},
 		{"1.2.beta", false},
 		{"1.21.beta", false},
+		{"v1.13.0-rc1", false},
 
 		// Have Error
 		{"", true},
 		{"foo", true},
 		{"\n1.2", true},
 		{"foo1.2.3", true},
+		{"\n", true},
+		{".", true},
+		{"beta", true},
+		{"v", true},
+		{"+metadata-width-hypen", true},
+		{"+metadata~dist", true},
+		{"-rc1-with-hypen", true},
 	}
 
 	for _, tc := range cases {
