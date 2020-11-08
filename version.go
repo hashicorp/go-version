@@ -387,3 +387,15 @@ func (v *Version) String() string {
 func (v *Version) Original() string {
 	return v.original
 }
+
+// RemoveMeta remove metadata
+// original parsed version data is not touched
+func (v *Version) RemoveMeta() {
+	v.metadata = ""
+}
+
+// RemovePre remove pre-release data
+// original parsed version data is not touched
+func (v *Version) RemovePre() {
+	v.pre = ""
+}

@@ -643,3 +643,87 @@ func TestLessThanOrEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestRemoveMeta(t *testing.T) {
+	cases := []struct {
+		raw   string
+		clean string
+	}{
+		{"1.13.0+dev-12-gcb171dbd5", "1.13.0"},
+		{"1.13.0-rc1", "1.13.0-rc1"},
+		{"1.13.0-rc1+dev-12-gcb171dbd5", "1.13.0-rc1"},
+		{"1.1.4", "1.1.4"},
+		{"1.2", "1.2.0"},
+		{"1.2.0", "1.2.0"},
+		{"1.2.0-X-1.2.0+metadata~dist", "1.2.0-X-1.2.0"},
+		{"1.2.3", "1.2.3"},
+		{"1.2+beta", "1.2.0"},
+		{"1.2-beta", "1.2.0-beta"},
+		{"1.2+foo", "1.2.0"},
+		{"1.4.5", "1.4.5"},
+		{"1.7", "1.7.0"},
+		{"1.7rc1", "1.7.0-rc1"},
+		{"1.7rc2", "1.7.0-rc2"},
+		{"v1.2", "1.2.0"},
+		{"v1.2.0.0", "1.2.0.0"},
+		{"v1.2.0.0.1", "1.2.0.0.1"},
+		{"v1.2+beta", "1.2.0"},
+		{"v1.2-beta", "1.2.0-beta"},
+		{"v1.2+foo", "1.2.0"},
+	}
+
+	for _, tc := range cases {
+		v, err := NewVersion(tc.raw)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		v.RemoveMeta()
+
+		if v.String() != tc.clean {
+			t.Fatalf("Expect: %s, Got: %s", tc.clean, v.String())
+		}
+	}
+}
+
+func TestRemovePre(t *testing.T) {
+	cases := []struct {
+		raw   string
+		clean string
+	}{
+		{"1.13.0+dev-12-gcb171dbd5", "1.13.0+dev-12-gcb171dbd5"},
+		{"1.13.0-rc1", "1.13.0"},
+		{"1.13.0-rc1+dev-12-gcb171dbd5", "1.13.0+dev-12-gcb171dbd5"},
+		{"1.1.4", "1.1.4"},
+		{"1.2", "1.2.0"},
+		{"1.2.0", "1.2.0"},
+		{"1.2.0-X-1.2.0+metadata~dist", "1.2.0+metadata~dist"},
+		{"1.2.3", "1.2.3"},
+		{"1.2+beta", "1.2.0+beta"},
+		{"1.2-beta", "1.2.0"},
+		{"1.2+foo", "1.2.0+foo"},
+		{"1.4.5", "1.4.5"},
+		{"1.7", "1.7.0"},
+		{"1.7rc1", "1.7.0"},
+		{"1.7rc2", "1.7.0"},
+		{"v1.2", "1.2.0"},
+		{"v1.2.0.0", "1.2.0.0"},
+		{"v1.2.0.0.1", "1.2.0.0.1"},
+		{"v1.2+beta", "1.2.0+beta"},
+		{"v1.2-beta", "1.2.0"},
+		{"v1.2+foo", "1.2.0+foo"},
+	}
+
+	for _, tc := range cases {
+		v, err := NewVersion(tc.raw)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		v.RemovePre()
+
+		if v.String() != tc.clean {
+			t.Fatalf("Expect: %s, Got: %s", tc.clean, v.String())
+		}
+	}
+}
