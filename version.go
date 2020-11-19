@@ -18,7 +18,7 @@ var (
 // The raw regular expression string used for testing the validity
 // of a version.
 const (
-	VersionRegexpRaw string = `[vV]?` + // Optional [vV] prefix
+	VersionRegexpRaw string = `(?:\w+\-)*[vV]?` + // Optional prefixes, will be ignored for parsing
 		`([0-9]+(\.[0-9]+)*?)` + // ( MajorNum ( '.' MinorNums ) *? )
 		`(-` + // Followed by (optionally): ( '-'
 		`([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)` + // Either ( PreNum String ( '.' OtherString ) * )
