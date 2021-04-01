@@ -212,17 +212,11 @@ func comparePart(preSelf string, preOther string) int {
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
-		if otherNumeric {
-			return -1
-		}
-		return 1
+		return -1
 	}
 
 	if preOther == "" {
-		if selfNumeric {
-			return 1
-		}
-		return -1
+		return 1
 	}
 
 	if selfNumeric && !otherNumeric {
