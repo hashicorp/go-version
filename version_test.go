@@ -34,6 +34,7 @@ func TestNewVersion(t *testing.T) {
 		{"1.7rc2", false},
 		{"v1.7rc2", false},
 		{"1.0-", false},
+		{"2.28.0.618.gf4bc123cb7", false},
 	}
 
 	for _, tc := range cases {
