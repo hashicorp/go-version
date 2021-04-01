@@ -7,16 +7,18 @@ import (
 func TestNewConstraint(t *testing.T) {
 	cases := []struct {
 		input string
+		ors   int
 		count int
 		err   bool
 	}{
-		{">= 1.2", 1, false},
-		{"1.0", 1, false},
-		{">= 1.x", 0, true},
-		{">= 1.2, < 1.0", 2, false},
+		{">= 1.2", 1, 1, false},
+		{"1.0", 1, 1, false},
+		{">= 1.x", 0, 0, true},
+		{">= 1.2, < 1.0", 1, 2, false},
+		{">= 1.2, < 1.0 || ~> 2.0, < 3", 2, 2, false},
 
 		// Out of bounds
-		{"11387778780781445675529500000000000000000", 0, true},
+		{"11387778780781445675529500000000000000000", 0, 0, true},
 	}
 
 	for _, tc := range cases {
@@ -26,10 +28,20 @@ func TestNewConstraint(t *testing.T) {
 		} else if !tc.err && err != nil {
 			t.Fatalf("error for input %s: %s", tc.input, err)
 		}
+		if tc.err {
+			continue
+		}
 
-		if len(v) != tc.count {
+		actual := len(v)
+		if actual != tc.ors {
+			t.Fatalf("input: %s\nexpected ors: %d\nactual: %d",
+				tc.input, tc.ors, actual)
+		}
+
+		actual = len(v[0])
+		if actual != tc.count {
 			t.Fatalf("input: %s\nexpected len: %d\nactual: %d",
-				tc.input, tc.count, len(v))
+				tc.input, tc.count, actual)
 		}
 	}
 }
@@ -42,6 +54,9 @@ func TestConstraintCheck(t *testing.T) {
 	}{
 		{">= 1.0, < 1.2", "1.1.5", true},
 		{"< 1.0, < 1.2", "1.1.5", false},
+		{">= 1.0, < 1.2 || > 1.3", "1.1.5", true},
+		{">= 1.0, < 1.2 || > 1.3", "1.3.2", true},
+		{">= 1.0, < 1.2 || > 1.3", "1.2.3", false},
 		{"= 1.0", "1.1.5", false},
 		{"= 1.0", "1.0.0", true},
 		{"1.0", "1.0.0", true},
@@ -104,6 +119,7 @@ func TestConstraintsString(t *testing.T) {
 	}{
 		{">= 1.0, < 1.2", ""},
 		{"~> 1.0.7", ""},
+		{">= 1.0, < 1.2 || > 1.3", ""},
 	}
 
 	for _, tc := range cases {
