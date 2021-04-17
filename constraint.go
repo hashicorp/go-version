@@ -1,6 +1,7 @@
 package version
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -201,4 +202,25 @@ func constraintPessimistic(v, c *Version) bool {
 
 	// If nothing has rejected the version by now, it's valid
 	return true
+}
+
+// MarshalJSON implements the json.Marshaler interface
+func (c *Constraints) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (c *Constraints) UnmarshalJSON(data []byte) error {
+	var csStr string
+	if err := json.Unmarshal(data, &csStr); err != nil {
+		return err
+	}
+
+	nc, err := NewConstraint(csStr)
+	if err != nil {
+		return err
+	}
+	*c = nc
+
+	return nil
 }

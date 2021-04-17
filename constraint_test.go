@@ -1,6 +1,7 @@
 package version
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -121,6 +122,61 @@ func TestConstraintsString(t *testing.T) {
 		if actual != expected {
 			t.Fatalf("Constraint: %s\nExpected: %#v\nActual: %s",
 				tc.constraint, expected, actual)
+		}
+	}
+}
+
+func TestConstraintsMarshalJSON(t *testing.T) {
+	cases := []struct {
+		constraint string
+		result     string
+	}{
+		{">= 1.0, < 1.2", `"\u003e= 1.0, \u003c 1.2"`},
+		{"~> 1.0.7", `"~\u003e 1.0.7"`},
+	}
+
+	for _, tc := range cases {
+		c, err := NewConstraint(tc.constraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual, err := json.Marshal(&c)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		expected := tc.result
+		if string(actual) != expected {
+			t.Fatalf("Constraint: %s\nExpected: %s\nActual: %s",
+				tc.constraint, expected, actual)
+		}
+	}
+}
+
+func TestConstraintsUnmarshalJSON(t *testing.T) {
+	cases := []struct {
+		constraint string
+		result     string
+	}{
+		{`">= 1.0, < 1.2"`, ">= 1.0, < 1.2"},
+		{`"~> 1.0.7"`, "~> 1.0.7"},
+	}
+
+	for _, tc := range cases {
+		var actual Constraints
+		if err := json.Unmarshal([]byte(tc.constraint), &actual); err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		expected, err := NewConstraint(tc.result)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		if actual.String() != expected.String() {
+			t.Fatalf("Constraint: %s\nExpected: %s\nActual: %s",
+				tc.result, expected, actual)
 		}
 	}
 }

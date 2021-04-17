@@ -2,6 +2,7 @@ package version
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -389,4 +390,25 @@ func (v *Version) String() string {
 // potential whitespace, `v` prefix, etc.
 func (v *Version) Original() string {
 	return v.original
+}
+
+// MarshalJSON implements the json.Marshaler interface
+func (v *Version) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.original)
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (v *Version) UnmarshalJSON(data []byte) error {
+	var vStr string
+	if err := json.Unmarshal(data, &vStr); err != nil {
+		return err
+	}
+
+	nv, err := NewVersion(vStr)
+	if err != nil {
+		return err
+	}
+	*v = *nv
+
+	return nil
 }
