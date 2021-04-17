@@ -1,6 +1,7 @@
 package version
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -651,6 +652,61 @@ func TestLessThanOrEqual(t *testing.T) {
 				"%s <= %s\nexpected: %t\nactual: %t",
 				tc.v1, tc.v2,
 				expected, actual)
+		}
+	}
+}
+
+func TestVersionMarshalJSON(t *testing.T) {
+	cases := []struct {
+		version string
+		result  string
+	}{
+		{"1.7rc2", `"1.7rc2"`},
+		{"1.2.0", `"1.2.0"`},
+	}
+
+	for _, tc := range cases {
+		v, err := NewVersion(tc.version)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual, err := json.Marshal(&v)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		expected := tc.result
+		if string(actual) != expected {
+			t.Fatalf("Version: %s\nExpected: %s\nActual: %s",
+				tc.version, expected, actual)
+		}
+	}
+}
+
+func TestVersionUnmarshalJSON(t *testing.T) {
+	cases := []struct {
+		version string
+		result  string
+	}{
+		{`"1.7rc2"`, "1.7rc2"},
+		{`"1.2.0"`, "1.2.0"},
+	}
+
+	for _, tc := range cases {
+		var actual Version
+		if err := json.Unmarshal([]byte(tc.version), &actual); err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		expected, err := NewVersion(tc.result)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		if !reflect.DeepEqual(&actual, expected) {
+			t.Fatalf("Constraint: %s\nExpected: %#v\nActual: %#v",
+				tc.result, expected, actual)
 		}
 	}
 }
