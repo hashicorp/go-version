@@ -106,6 +106,38 @@ func TestNewSemver(t *testing.T) {
 	}
 }
 
+func TestCore(t *testing.T) {
+	cases := []struct {
+		v1 string
+		v2 string
+	}{
+		{"1.2.3", "1.2.3"},
+		{"2.3.4-alpha1", "2.3.4"},
+		{"3.4.5alpha1", "3.4.5"},
+		{"1.2.3-2", "1.2.3"},
+		{"4.5.6-beta1+meta", "4.5.6"},
+		{"5.6.7.1.2.3", "5.6.7"},
+	}
+
+	for _, tc := range cases {
+		v1, err := NewVersion(tc.v1)
+		if err != nil {
+			t.Fatalf("error for version %q: %s", tc.v1, err)
+		}
+		v2, err := NewVersion(tc.v2)
+		if err != nil {
+			t.Fatalf("error for version %q: %s", tc.v2, err)
+		}
+
+		actual := v1.Core()
+		expected := v2
+
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("expected: %s\nactual: %s", expected, actual)
+		}
+	}
+}
+
 func TestVersionCompare(t *testing.T) {
 	cases := []struct {
 		v1       string
