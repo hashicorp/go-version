@@ -1,0 +1,62 @@
+name: ci
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+env:
+  GOPROXY: https://proxy.golang.org/
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Go fmt
+      run: |
+        # exit 1 if any files need go fmt
+        test -z $(gofmt -s -l .)
+    - name: Go vet
+      run: |
+        go vet ./...
+    - name: Build
+      run: |
+        go build -v .
+  test:
+    name: Test
+    needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Unit tests
+      run: |
+        go test -timeout=2m -v -race ./...
