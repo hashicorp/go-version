@@ -66,6 +66,16 @@ func NewConstraint(v string) (Constraints, error) {
 	return Constraints(result), nil
 }
 
+// MustConstraints is a helper that wraps a call to a function
+// returning (Constraints, error) and panics if error is non-nil.
+func MustConstraints(c Constraints, err error) Constraints {
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
 // Check tests if a version satisfies all the constraints.
 func (cs Constraints) Check(v *Version) bool {
 	for _, c := range cs {
