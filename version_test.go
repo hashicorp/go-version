@@ -654,3 +654,44 @@ func TestLessThanOrEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestMajorMinorPatch(t *testing.T) {
+	cases := []struct {
+		v1    string
+		major int64
+		minor int64
+		patch int64
+	}{
+		{"1.2", int64(1), int64(2), int64(0)},
+		{"1.2+foo", int64(1), int64(2), int64(0)},
+		{"1.2-beta", int64(1), int64(2), int64(0)},
+		{"1.2.0", int64(1), int64(2), int64(0)},
+		{"1.2.3", int64(1), int64(2), int64(3)},
+		{"v1.2.3.4", int64(1), int64(2), int64(3)},
+		{"v1.2.0.0", int64(1), int64(2), int64(0)},
+		{"v1.2.0.0.1", int64(1), int64(2), int64(0)},
+		{"v1.2", int64(1), int64(2), int64(0)},
+		{"v1.2", int64(1), int64(2), int64(0)},
+		{"v1.2.0.0", int64(1), int64(2), int64(0)},
+		{"v1.2.3.0", int64(1), int64(2), int64(3)},
+		{"1.7rc2", int64(1), int64(7), int64(0)},
+	}
+
+	for _, tc := range cases {
+		v1, err := NewVersion(tc.v1)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		t.Logf("segments: %v\n", v1.Segments())
+		if v1.Major() != tc.major {
+			t.Fatalf("version %s. expecting major=%d, got major=%d", tc.v1, v1.Major(), tc.major)
+		}
+		if v1.Minor() != tc.minor {
+			t.Fatalf("version %s. expecting minor=%d, got minor=%d", tc.v1, v1.Minor(), tc.minor)
+		}
+		if v1.Patch() != tc.patch {
+			t.Fatalf("version %s. expecting patch=%d, got patch=%d", tc.v1, v1.Patch(), tc.patch)
+		}
+
+	}
+}
