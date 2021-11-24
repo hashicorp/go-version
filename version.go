@@ -388,3 +388,24 @@ func (v *Version) String() string {
 func (v *Version) Original() string {
 	return v.original
 }
+
+func (v *Version) Major() int64 {
+	if len(v.segments) < 3 {
+		panic(fmt.Errorf("invalid version %v. can't extract version's MAJOR part", v))
+	}
+	return v.segments[0]
+}
+
+func (v *Version) Minor() int64 {
+	if len(v.segments) < 3 {
+		panic(fmt.Errorf("invalid version %v. can't extract version's MINOR part", v))
+	}
+	return v.segments[1]
+}
+
+func (v *Version) Patch() int64 {
+	if len(v.segments) < 3 {
+		panic(fmt.Errorf("invalid version %v. can't extract version's PATCH part", v))
+	}
+	return v.segments[2]
+}
