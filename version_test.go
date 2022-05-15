@@ -1,6 +1,8 @@
 package version
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -389,6 +391,72 @@ func TestVersionSegments64(t *testing.T) {
 			if actual[0] != expected {
 				t.Fatalf("Segments64 is mutable")
 			}
+		}
+	}
+}
+
+func TestJsonMarshal(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"1.2.3", false},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0-X-1.2.0+metadata~dist", false},
+		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+	}
+
+	for _, tc := range cases {
+
+		v, err := NewVersion(tc.version)
+		if err != nil {
+			t.Errorf("error for version %q: %s", tc.version, err)
+		}
+		parsed, err2 := json.Marshal(v)
+		if err2 != nil {
+			t.Errorf("error marshaling version %q: %s", tc.version, err2)
+		}
+		result := string(parsed)
+		expected := fmt.Sprintf("%q", tc.version)
+		if result != expected && !tc.err {
+			t.Errorf("Error marshaling unexpected marshaled content: result=%q expected=%q", result, expected)
+		}
+	}
+}
+
+func TestJsonUnmarshal(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"1.2.3", false},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hypen", false},
+		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0-X-1.2.0+metadata~dist", false},
+		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4", false},
+	}
+
+	for _, tc := range cases {
+		v := &Version{}
+		err := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), v)
+		if err != nil {
+			t.Errorf("error unmarshaling version: %s", err)
+		}
+		result := v.String()
+		expected := tc.version
+		if result != expected {
+			t.Errorf("error unmarshaling, unexpected object content: result=%q expected =%q", result, expected)
 		}
 	}
 }
