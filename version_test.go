@@ -413,9 +413,9 @@ func TestJsonMarshal(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := NewVersion(tc.version)
-		if err != nil {
-			t.Fatalf("error for version %q: %s", tc.version, err)
+		v, err1 := NewVersion(tc.version)
+		if err1 != nil {
+			t.Fatalf("error for version %q: %s", tc.version, err1)
 		}
 
 		parsed, err2 := json.Marshal(v)
@@ -454,9 +454,9 @@ func TestJsonUnmarshal(t *testing.T) {
 		}
 
 		actual := &Version{}
-		err := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), actual)
-		if err != nil {
-			t.Fatalf("error unmarshaling version: %s", err)
+		err2 := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), actual)
+		if err2 != nil {
+			t.Fatalf("error unmarshaling version: %s", err2)
 		}
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("error unmarshaling, unexpected object content: actual=%q expected=%q", actual, expected)
