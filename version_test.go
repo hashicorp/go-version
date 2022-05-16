@@ -402,29 +402,30 @@ func TestJsonMarshal(t *testing.T) {
 	}{
 		{"1.2.3", false},
 		{"1.2.0-x.Y.0+metadata", false},
-		{"1.2.0-x.Y.0+metadata-width-hypen", false},
-		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"1.2.0.4-x.Y.0+metadata", false},
-		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
 		{"1.2.0-X-1.2.0+metadata~dist", false},
-		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 	}
 
 	for _, tc := range cases {
 		v, err := NewVersion(tc.version)
 		if err != nil {
-			t.Fatalf("err: %s", err)
+			t.Fatalf("error for version %q: %s", tc.version, err)
 		}
+
 		parsed, err2 := json.Marshal(v)
 		if err2 != nil {
 			t.Fatalf("error marshaling version %q: %s", tc.version, err2)
 		}
-		actual := string(parsed)
-		expected := tc.version
-		if actual != expected && !tc.err {
-			t.Fatalf("Error marshaling unexpected marshaled content: actual=%q expected=%q", actual, expected)
+		result := string(parsed)
+		expected := fmt.Sprintf("%q", tc.version)
+		if result != expected && !tc.err {
+			t.Fatalf("Error marshaling unexpected marshaled content: result=%q expected=%q", result, expected)
 		}
 	}
 }
@@ -436,13 +437,13 @@ func TestJsonUnmarshal(t *testing.T) {
 	}{
 		{"1.2.3", false},
 		{"1.2.0-x.Y.0+metadata", false},
-		{"1.2.0-x.Y.0+metadata-width-hypen", false},
-		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"1.2.0.4-x.Y.0+metadata", false},
-		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
 		{"1.2.0-X-1.2.0+metadata~dist", false},
-		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 	}
 
@@ -453,12 +454,12 @@ func TestJsonUnmarshal(t *testing.T) {
 		}
 
 		actual := &Version{}
-		err := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), v)
+		err := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), actual)
 		if err != nil {
-			t.Errorf("error unmarshaling version: %s", err)
+			t.Fatalf("error unmarshaling version: %s", err)
 		}
 		if !reflect.DeepEqual(actual, expected) {
-			t.Errorf("error unmarshaling, unexpected object content: actual=%q expected=%q", actual, expected)
+			t.Fatalf("error unmarshaling, unexpected object content: actual=%q expected=%q", actual, expected)
 		}
 	}
 }
