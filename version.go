@@ -2,7 +2,6 @@ package version
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -390,25 +389,19 @@ func (v *Version) Original() string {
 	return v.original
 }
 
-// UnmarshalJSON implements JSON.Unmarshaler interface.
-func (v *Version) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	temp, err := NewVersion(s)
+// UnmarshalText implements encoding.TextUnmarshaler interface.
+func (v *Version) UnmarshalText(b []byte) error {
+	temp, err := NewVersion(string(b))
 	if err != nil {
 		return err
 	}
-	v.metadata = temp.metadata
-	v.pre = temp.pre
-	v.segments = temp.segments
-	v.si = temp.si
-	v.original = temp.original
+
+	*v = *temp
+
 	return nil
 }
 
-// MarshalJSON implements JSON.Marshaler interface.
-func (v Version) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.String())
+// MarshalText implements encoding.TextMarshaler interface.
+func (v *Version) MarshalText() ([]byte, error) {
+	return []byte(v.String()), nil
 }
