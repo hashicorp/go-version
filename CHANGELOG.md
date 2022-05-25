@@ -1,3 +1,10 @@
+# 1.5.0 (May 18, 2022)
+
+FEATURES:
+
+- Use `encoding` `TextMarshaler` & `TextUnmarshaler` instead of JSON equivalents ([#95](https://github.com/hashicorp/go-version/pull/95))
+- Add JSON handlers to allow parsing from/to JSON ([#93](https://github.com/hashicorp/go-version/pull/93))
+
 # 1.4.0 (January 5, 2022)
 
 FEATURES:
