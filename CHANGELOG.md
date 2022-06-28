@@ -1,3 +1,9 @@
+# 1.6.0 (June 28, 2022)
+
+FEATURES:
+
+- Add `Prerelease` function to `Constraint` to return true if the version includes a prerelease field ([#100](https://github.com/hashicorp/go-version/pull/100))
+
 # 1.5.0 (May 18, 2022)
 
 FEATURES:
