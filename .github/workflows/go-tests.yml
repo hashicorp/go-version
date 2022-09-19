@@ -1,0 +1,66 @@
+name: go-tests
+
+on: [push]
+
+env:
+  TEST_RESULTS: /tmp/test-results
+
+jobs:
+
+  go-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.19]
+    
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create test directory
+        run: |
+          mkdir -p ${{env.TEST_RESULTS}}
+
+      - name: Download go modules
+        run: go mod download
+      
+      - name: Cache / restore go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      # Check go fmt output because it does not report non-zero when there are fmt changes
+      - name: Run gofmt
+        run: |
+          go fmt ./...
+          files=$(go fmt ./...)
+            if [ -n "$files" ]; then
+              echo "The following file(s) do not conform to go fmt:"
+              echo "$files"
+              exit 1
+            fi
+      
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@v1.8.2
+      
+      - name: Run go tests
+        run: |
+          PACKAGE_NAMES=$(go list ./...)
+          gotestsum --format=short-verbose --junitfile $TEST_RESULTS/gotestsum-report.xml -- $PACKAGE_NAMES
+      
+      # Save coverage report parts
+      - name: Upload and save artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test Results
+          path: ${{env.TEST_RESULTS}}
