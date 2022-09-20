@@ -48,12 +48,14 @@ jobs:
               echo "$files"
               exit 1
             fi
-      
+        
+      # Install gotestsum with go get for 1.15.3; otherwise default to go install 
       - name: Install gotestsum
-        run: 
+        run: |
           if [ ${{ matrix.go-version }} == 1.15.3 ]; then
               go get gotest.tools/gotestsum@v1.8.2; else
               go install gotest.tools/gotestsum@v1.8.2
+          fi  
       
       - name: Run go tests
         run: |
