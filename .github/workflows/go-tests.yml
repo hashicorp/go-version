@@ -15,7 +15,7 @@ jobs:
     
     steps:
       - name: Setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # https://github.com/actions/setup-go/releases/tag/v3.5.0
         with:
           go-version: ${{ matrix.go-version }}
       
