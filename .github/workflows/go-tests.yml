@@ -15,12 +15,12 @@ jobs:
     
     steps:
       - name: Setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # https://github.com/actions/setup-go/releases/tag/v3.5.0
         with:
           go-version: ${{ matrix.go-version }}
       
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # https://github.com/actions/checkout/releases/tag/v3.2.0
 
       - name: Create test directory
         run: |
@@ -30,7 +30,7 @@ jobs:
         run: go mod download
       
       - name: Cache / restore go modules
-        uses: actions/cache@v3
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # https://github.com/actions/cache/releases/tag/v3.0.11
         with:
           path: |
             ~/go/pkg/mod
@@ -68,7 +68,7 @@ jobs:
       
       # Save coverage report parts
       - name: Upload and save artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # https://github.com/actions/upload-artifact/releases/tag/v3.1.1
         with:
           name: Test Results
           path: ${{ env.TEST_RESULTS }}
