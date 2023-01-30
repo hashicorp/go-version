@@ -30,7 +30,7 @@ jobs:
         run: go mod download
       
       - name: Cache / restore go modules
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # https://github.com/actions/cache/releases/tag/v3.0.11
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # https://github.com/actions/cache/releases/tag/v3.2.4
         with:
           path: |
             ~/go/pkg/mod
