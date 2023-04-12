@@ -20,7 +20,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
       
       - name: Checkout code
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # https://github.com/actions/checkout/releases/tag/v3.3.0
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # https://github.com/actions/checkout/releases/tag/v3.5.1
 
       - name: Create test directory
         run: |
