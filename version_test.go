@@ -25,6 +25,7 @@ func TestNewVersion(t *testing.T) {
 		{"1.2.0-x.Y.0+metadata", false},
 		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
 		{"1.2.3-rc1-with-hyphen", false},
+		{"1.2.3-rc2-with_underscore", false},
 		{"1.2.3.4", false},
 		{"1.2.0.4-x.Y.0+metadata", false},
 		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
