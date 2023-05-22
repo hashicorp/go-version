@@ -19,8 +19,8 @@ var (
 // of a version.
 const (
 	VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
-		`(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?` +
-		`(\+([0-9A-Za-z\-~]+(\.[0-9A-Za-z\-~]+)*))?` +
+		`(-([0-9]+[0-9A-Za-z\-~_]*(\.[0-9A-Za-z\-~_]+)*)|(-?([A-Za-z\-~_]+[0-9A-Za-z\-~_]*(\.[0-9A-Za-z\-~_]+)*)))?` +
+		`(\+([0-9A-Za-z\-~_]+(\.[0-9A-Za-z\-~_]+)*))?` +
 		`?`
 
 	// SemverRegexpRaw requires a separator between version and prerelease
