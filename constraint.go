@@ -10,6 +10,7 @@ import (
 
 // Constraint represents a single constraint for a version, such as
 // ">= 1.0".
+
 type Constraint struct {
 	f        constraintFunc
 	op       operator
@@ -27,6 +28,8 @@ type Constraints []*Constraint
 
 type constraintFunc func(v, c *Version) bool
 
+type constraintComparison func(v1, v2 Constraint) bool
+
 var constraintOperators map[string]constraintOperation
 
 type constraintOperation struct {
@@ -35,6 +38,8 @@ type constraintOperation struct {
 }
 
 var constraintRegexp *regexp.Regexp
+
+var setTheoryOperators map[operator]constraintComparison
 
 func init() {
 	constraintOperators = map[string]constraintOperation{
@@ -47,7 +52,33 @@ func init() {
 		"<=": {op: lessThanEqual, f: constraintLessThanEqual},
 		"~>": {op: pessimistic, f: constraintPessimistic},
 	}
+	setTheoryOperators = map[operator]constraintComparison{
+		greaterThan: func(v1, v2 Constraint) bool {
+			if !(v2.op == greaterThan || v2.op == greaterThanEqual) {
+				return false
+			}
+			return v1.check.LessThan(v2.check)
+		},
+		greaterThanEqual: func(v1, v2 Constraint) bool {
+			if !(v2.op == greaterThan || v2.op == greaterThanEqual) {
+				return false
+			}
+			return v1.check.LessThanOrEqual(v2.check)
+		},
+		lessThan: func(v1, v2 Constraint) bool {
+			if !(v2.op == lessThan || v2.op == lessThanEqual) {
+				return false
+			}
 
+			return v1.check.GreaterThan(v2.check)
+		},
+		lessThanEqual: func(v1, v2 Constraint) bool {
+			if !(v2.op == lessThan || v2.op == lessThanEqual) {
+				return false
+			}
+			return v1.check.GreaterThanOrEqual(v2.check)
+		},
+	}
 	ops := make([]string, 0, len(constraintOperators))
 	for k := range constraintOperators {
 		ops = append(ops, regexp.QuoteMeta(k))
@@ -98,6 +129,64 @@ func (cs Constraints) Check(v *Version) bool {
 	return true
 }
 
+// IsPartOfSets compares Constraints with other Constraints
+// for equality. This represents a logical equivalence of compared
+// constraints.
+// e.g. '>0.1,>0.5' and '=0.2' return true, '<10.5.77,>4.5.77' and '6.5.76' returns true
+// '~> 5.0' and '~> 5.0.2' return true.
+//
+// Missing operator is treated as equal to '=', whitespaces
+// are ignored.
+func (cs Constraints) IsPartOfSets(c Constraints) bool {
+	// Loop through the constraints in the first set.
+	for _, c1 := range cs {
+		// Loop through the constraints in the second set.
+		for _, c2 := range c {
+			// If c1 is an "equal" constraint and it's not equal to c2, return false.
+			if c1.op == equal && !c1.Equals(c2) {
+				return false
+			}
+			// If c1 is a "pessimistic" constraint, check various conditions.
+			if c1.op == pessimistic {
+				// If c2 is an "equal" constraint and c1 passes the check, return true.
+				if c2.op == equal && c1.Check(c2.check) {
+					continue
+				}
+				// If both c1 and c2 are "pessimistic" constraints, compare their segments.
+				if c2.op == pessimistic {
+					c1seg := c1.check.Segments()
+					c2seg := c2.check.Segments()
+					// If the segments match and c2's third segment is greater or equal to c1's third segment, return true.
+					if c1seg[0] == c2seg[0] && c1seg[1] == c2seg[1] && c2seg[2] >= c1seg[2] {
+						continue
+					}
+				}
+				// If none of the above conditions are met, return false.
+				return false
+			}
+			// If c1 and c2 have valid operators, use the set theory operators to compare them.
+			v1, ok1 := setTheoryOperators[c1.op]
+			_, ok2 := setTheoryOperators[c2.op]
+			if ok1 && ok2 {
+				// If the set theory operator returns false, return false.
+				if !v1(*c1, *c2) {
+					return false
+				}
+			}
+			// If c1 has a valid operator and c2 is an "equal" constraint, check if c1 passes the check.
+			if ok1 && c2.op == equal {
+				if c1.Check(c2.check) {
+					continue
+				}
+				// If the check fails, return false.
+				return false
+			}
+		}
+	}
+	// If no false conditions are met, return true.
+	return true
+}
+
 // Equals compares Constraints with other Constraints
 // for equality. This may not represent logical equivalence
 // of compared constraints.
@@ -105,7 +194,7 @@ func (cs Constraints) Check(v *Version) bool {
 // to '>0.2' it is *NOT* treated as equal.
 //
 // Missing operator is treated as equal to '=', whitespaces
-// are ignored and constraints are sorted before comaparison.
+// are ignored and constraints are sorted before comparison.
 func (cs Constraints) Equals(c Constraints) bool {
 	if len(cs) != len(c) {
 		return false
@@ -114,7 +203,9 @@ func (cs Constraints) Equals(c Constraints) bool {
 	// make copies to retain order of the original slices
 	left := make(Constraints, len(cs))
 	copy(left, cs)
+
 	sort.Stable(left)
+
 	right := make(Constraints, len(c))
 	copy(right, c)
 	sort.Stable(right)
@@ -175,6 +266,7 @@ func (c *Constraint) String() string {
 
 func parseSingle(v string) (*Constraint, error) {
 	matches := constraintRegexp.FindStringSubmatch(v)
+
 	if matches == nil {
 		return nil, fmt.Errorf("Malformed constraint: %s", v)
 	}
