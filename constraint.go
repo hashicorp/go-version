@@ -132,7 +132,8 @@ func (cs Constraints) Check(v *Version) bool {
 // EqualsLogical compares Constraints with other Constraints
 // for equality. This represents a logical equivalence of compared
 // constraints.
-// e.g. '>0.1,>0.5' is logically equivalent to '>0.2'
+// e.g. '>0.1,>0.5' and '=0.2' return true, '<10.5.77,>4.5.77' and '6.5.76' returns true
+// '~> 5.0' and '~> 5.0.2' return true.
 //
 // Missing operator is treated as equal to '=', whitespaces
 // are ignored.
