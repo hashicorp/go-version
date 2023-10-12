@@ -129,7 +129,7 @@ func (cs Constraints) Check(v *Version) bool {
 	return true
 }
 
-// EqualsLogical compares Constraints with other Constraints
+// IsPartOfSets compares Constraints with other Constraints
 // for equality. This represents a logical equivalence of compared
 // constraints.
 // e.g. '>0.1,>0.5' and '=0.2' return true, '<10.5.77,>4.5.77' and '6.5.76' returns true
@@ -137,7 +137,7 @@ func (cs Constraints) Check(v *Version) bool {
 //
 // Missing operator is treated as equal to '=', whitespaces
 // are ignored.
-func (cs Constraints) EqualsLogical(c Constraints) bool {
+func (cs Constraints) IsPartOfSets(c Constraints) bool {
 	// Loop through the constraints in the first set.
 	for _, c1 := range cs {
 		// Loop through the constraints in the second set.
@@ -252,15 +252,6 @@ func (cs Constraints) String() string {
 // Check tests if a constraint is validated by the given version.
 func (c *Constraint) Check(v *Version) bool {
 	return c.f(v, c.check)
-}
-func (cs *Constraint) IsWithin(c Constraint) bool {
-	// if cs.set != nil && cs.set != nil {
-	// 	if cs.set.isNegativeInfinite && c.set.isNegativeInfinite {
-	// 		if cs
-	// 		return cs.check.GreaterThanOrEqual(c.check)
-	// 	}
-	// }
-	return false
 }
 
 // Prerelease returns true if the version underlying this constraint

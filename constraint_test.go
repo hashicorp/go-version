@@ -155,7 +155,7 @@ func TestConstraintEqualsLogical(t *testing.T) {
 			t.Fatalf("err: %s", err)
 		}
 
-		actual := leftCon.EqualsLogical(rightCon)
+		actual := leftCon.IsPartOfSets(rightCon)
 		if actual != tc.expectedEqual {
 			t.Fatalf("Constraints: %s vs %s\nExpected: %t\nActual: %t",
 				tc.leftConstraint, tc.rightConstraint, tc.expectedEqual, actual)
