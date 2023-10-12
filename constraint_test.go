@@ -127,7 +127,7 @@ func TestConstraintPrerelease(t *testing.T) {
 		}
 	}
 }
-func TestConstraintEqualsLogical(t *testing.T) {
+func TestConstraintIsPartOfSets(t *testing.T) {
 	cases := []struct {
 		leftConstraint  string
 		rightConstraint string
