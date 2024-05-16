@@ -2,6 +2,7 @@ package version
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -160,7 +161,7 @@ func (v *Version) Compare(other *Version) int {
 			// this means Other had the lower specificity
 			// Check to see if the remaining segments in Self are all zeros -
 			if !allZero(segmentsSelf[i:]) {
-				//if not, it means that Self has to be greater than Other
+				// if not, it means that Self has to be greater than Other
 				return 1
 			}
 			break
@@ -404,4 +405,21 @@ func (v *Version) UnmarshalText(b []byte) error {
 // MarshalText implements encoding.TextMarshaler interface.
 func (v *Version) MarshalText() ([]byte, error) {
 	return []byte(v.String()), nil
+}
+
+// Scan implements the sql.Scanner interface.
+func (v *Version) Scan(src interface{}) error {
+	switch src := src.(type) {
+	case string:
+		return v.UnmarshalText([]byte(src))
+	case nil:
+		return nil
+	default:
+		return fmt.Errorf("Cannot scan %T as Version", src)
+	}
+}
+
+// Value implements the driver.Valuer interface.
+func (v *Version) Value() (driver.Value, error) {
+	return v.String(), nil
 }
