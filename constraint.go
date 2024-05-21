@@ -5,7 +5,6 @@ package version
 
 import (
 	"fmt"
-	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -202,7 +201,7 @@ func prereleaseCheck(v, c *Version) bool {
 	case cPre && vPre:
 		// A constraint with a pre-release can only match a pre-release version
 		// with the same base segments.
-		return reflect.DeepEqual(c.Segments64(), v.Segments64())
+		return v.equalSegments(c)
 
 	case !cPre && vPre:
 		// A constraint without a pre-release can only match a version without a

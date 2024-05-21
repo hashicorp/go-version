@@ -6,7 +6,6 @@ package version
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -120,11 +119,8 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	segmentsSelf := v.Segments64()
-	segmentsOther := other.Segments64()
-
 	// If the segments are the same, we must compare on prerelease info
-	if reflect.DeepEqual(segmentsSelf, segmentsOther) {
+	if v.equalSegments(other) {
 		preSelf := v.Prerelease()
 		preOther := other.Prerelease()
 		if preSelf == "" && preOther == "" {
@@ -140,6 +136,8 @@ func (v *Version) Compare(other *Version) int {
 		return comparePrereleases(preSelf, preOther)
 	}
 
+	segmentsSelf := v.Segments64()
+	segmentsOther := other.Segments64()
 	// Get the highest specificity (hS), or if they're equal, just use segmentSelf length
 	lenSelf := len(segmentsSelf)
 	lenOther := len(segmentsOther)
@@ -181,6 +179,21 @@ func (v *Version) Compare(other *Version) int {
 
 	// if we got this far, they're equal
 	return 0
+}
+
+func (v *Version) equalSegments(other *Version) bool {
+	segmentsSelf := v.Segments64()
+	segmentsOther := other.Segments64()
+
+	if len(segmentsSelf) != len(segmentsOther) {
+		return false
+	}
+	for i, v := range segmentsSelf {
+		if v != segmentsOther[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func allZero(segs []int64) bool {
