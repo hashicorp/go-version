@@ -69,8 +69,7 @@ func newVersion(v string, pattern *regexp.Regexp) (*Version, error) {
 	for i, str := range segmentsStr {
 		val, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf(
-				"Error parsing version: %s", err)
+			return nil, fmt.Errorf("Error parsing version: %s", err)
 		}
 
 		segments[i] = val
@@ -161,7 +160,7 @@ func (v *Version) Compare(other *Version) int {
 			// this means Other had the lower specificity
 			// Check to see if the remaining segments in Self are all zeros -
 			if !allZero(segmentsSelf[i:]) {
-				//if not, it means that Self has to be greater than Other
+				// if not, it means that Self has to be greater than Other
 				return 1
 			}
 			break
@@ -205,7 +204,7 @@ func allZero(segs []int64) bool {
 	return true
 }
 
-func comparePart(preSelf string, preOther string) int {
+func comparePart(preSelf, preOther string) int {
 	if preSelf == preOther {
 		return 0
 	}
@@ -239,20 +238,21 @@ func comparePart(preSelf string, preOther string) int {
 		return -1
 	}
 
-	if selfNumeric && !otherNumeric {
+	switch {
+	case selfNumeric && !otherNumeric:
 		return -1
-	} else if !selfNumeric && otherNumeric {
+	case !selfNumeric && otherNumeric:
 		return 1
-	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
+	case !selfNumeric && !otherNumeric && preSelf > preOther:
 		return 1
-	} else if selfInt > otherInt {
+	case selfInt > otherInt:
 		return 1
+	default:
+		return -1
 	}
-
-	return -1
 }
 
-func comparePrereleases(v string, other string) int {
+func comparePrereleases(v, other string) int {
 	// the same pre release!
 	if v == other {
 		return 0
@@ -271,7 +271,7 @@ func comparePrereleases(v string, other string) int {
 	}
 
 	// loop for parts to find the first difference
-	for i := 0; i < biggestLen; i = i + 1 {
+	for i := 0; i < biggestLen; i++ {
 		partSelfPre := ""
 		if i < selfPreReleaseLen {
 			partSelfPre = selfPreReleaseMeta[i]
@@ -388,7 +388,7 @@ func (v *Version) String() string {
 		str := strconv.FormatInt(s, 10)
 		fmtParts[i] = str
 	}
-	fmt.Fprintf(&buf, strings.Join(fmtParts, "."))
+	fmt.Fprint(&buf, strings.Join(fmtParts, "."))
 	if v.pre != "" {
 		fmt.Fprintf(&buf, "-%s", v.pre)
 	}
