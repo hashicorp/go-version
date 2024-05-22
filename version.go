@@ -415,7 +415,7 @@ func (v *Version) Scan(src interface{}) error {
 	case nil:
 		return nil
 	default:
-		return fmt.Errorf("Cannot scan %T as Version", src)
+		return fmt.Errorf("cannot scan %T as Version", src)
 	}
 }
 
