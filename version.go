@@ -174,7 +174,7 @@ func (v *Version) Compare(other *Version) int {
 		} else if lhs < rhs {
 			return -1
 		}
-		// Otherwis, rhs was > lhs, they're not equal
+		// Otherwise, rhs was > lhs, they're not equal
 		return 1
 	}
 

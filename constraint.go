@@ -107,7 +107,7 @@ func (cs Constraints) Check(v *Version) bool {
 // to '>0.2' it is *NOT* treated as equal.
 //
 // Missing operator is treated as equal to '=', whitespaces
-// are ignored and constraints are sorted before comaparison.
+// are ignored and constraints are sorted before comparison.
 func (cs Constraints) Equals(c Constraints) bool {
 	if len(cs) != len(c) {
 		return false
