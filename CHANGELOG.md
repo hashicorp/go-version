@@ -17,7 +17,6 @@ INTERNAL:
 - SEC-090: Automated trusted workflow pinning (2023-04-05) ([#124](https://github.com/hashicorp/go-version/pull/124))
 - update readme ([#104](https://github.com/hashicorp/go-version/pull/104))
 
-
 # 1.6.0 (June 28, 2022)
 
 FEATURES:
