@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCollection(t *testing.T) {
@@ -41,12 +43,13 @@ func TestCollection(t *testing.T) {
 
 	versions := make([]*Version, len(versionsRaw))
 	for i, raw := range versionsRaw {
-		v, err := NewVersion(raw)
-		if err != nil {
-			t.Fatalf("err: %s", err)
-		}
-
-		versions[i] = v
+		t.Run(raw, func(t *testing.T) {
+			v, err := NewVersion(raw)
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			versions[i] = v
+		})
 	}
 
 	sort.Sort(Collection(versions))
@@ -89,6 +92,6 @@ func TestCollection(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(actual, expected) {
-		t.Fatalf("bad: %#v", actual)
+		assert.EqualValues(t, expected, actual)
 	}
 }

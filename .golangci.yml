@@ -1,15 +1,13 @@
 linters:
   enable:
     - gosimple
-    - deadcode
+    - unused
     - typecheck
     - govet
     - errcheck
     - staticcheck
     - unused
-    - structcheck
-    - varcheck
-    - golint
+    - revive
     - dupl
     - gocyclo
     - gofmt
