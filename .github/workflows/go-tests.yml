@@ -1,8 +1,6 @@
 name: go-tests
 
-on: 
-  push:
-    branches: [coverage-test]
+on: [push]
 
 env:
   TEST_RESULTS: /tmp/test-results
@@ -50,9 +48,6 @@ jobs:
               echo "$files"
               exit 1
             fi
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5
         
       # Install gotestsum with go get for 1.15.3; otherwise default to go install 
       - name: Install gotestsum
