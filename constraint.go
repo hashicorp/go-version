@@ -48,6 +48,8 @@ func init() {
 		">=": {op: greaterThanEqual, f: constraintGreaterThanEqual},
 		"<=": {op: lessThanEqual, f: constraintLessThanEqual},
 		"~>": {op: pessimistic, f: constraintPessimistic},
+		"^":  {op: caret, f: constraintCaret},
+		"~":  {op: tilde, f: constraintTilde},
 	}
 
 	ops := make([]string, 0, len(constraintOperators))
@@ -229,7 +231,9 @@ const (
 	lessThan         operator = '<'
 	greaterThanEqual operator = '≥'
 	lessThanEqual    operator = '≤'
-	pessimistic      operator = '~'
+	pessimistic      operator = '≳'
+	caret            operator = '^'
+	tilde            operator = '~'
 )
 
 func constraintEqual(v, c *Version) bool {
@@ -294,5 +298,33 @@ func constraintPessimistic(v, c *Version) bool {
 	}
 
 	// If nothing has rejected the version by now, it's valid
+	return true
+}
+
+func constraintCaret(v, c *Version) bool {
+	if !prereleaseCheck(v, c) || v.LessThan(c) {
+		return false
+	}
+
+	if v.segments[0] != c.segments[0] {
+		return false
+	}
+
+	return true
+}
+
+func constraintTilde(v, c *Version) bool {
+	if !prereleaseCheck(v, c) || v.LessThan(c) {
+		return false
+	}
+
+	if v.segments[0] != c.segments[0] {
+		return false
+	}
+
+	if v.segments[1] != c.segments[1] && c.si > 1 {
+		return false
+	}
+
 	return true
 }
