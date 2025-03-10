@@ -30,7 +30,7 @@ jobs:
         run: go mod download
       
       - name: Cache / restore go modules
-        uses: actions/cache@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
         with:
           path: |
             ~/go/pkg/mod
@@ -48,6 +48,9 @@ jobs:
               echo "$files"
               exit 1
             fi
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5
         
       # Install gotestsum with go get for 1.15.3; otherwise default to go install 
       - name: Install gotestsum
@@ -64,11 +67,20 @@ jobs:
       - name: Run go tests
         run: |
           PACKAGE_NAMES=$(go list ./...)
-          gotestsum --format=short-verbose --junitfile $TEST_RESULTS/gotestsum-report.xml -- $PACKAGE_NAMES
+          gotestsum --format=short-verbose --junitfile $TEST_RESULTS/gotestsum-report.xml -- -p 2 -cover -coverprofile=coverage.out $PACKAGE_NAMES
       
       # Save coverage report parts
       - name: Upload and save artifacts
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
-          name: Test Results
+          name: Test Results-${{matrix.go-version}}
           path: ${{ env.TEST_RESULTS }}
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          path: coverage.out
+          name: Coverage-report-${{matrix.go-version}}
+
+      - name: Display coverage report 
+        run: go tool cover -func=coverage.out 
