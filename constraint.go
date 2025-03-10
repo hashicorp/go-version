@@ -168,7 +168,7 @@ func (c *Constraint) Check(v *Version) bool {
 // Prerelease returns true if the version underlying this constraint
 // contains a prerelease field.
 func (c *Constraint) Prerelease() bool {
-	return len(c.check.Prerelease()) > 0
+	return c.check.Prerelease() != ""
 }
 
 func (c *Constraint) String() string {
@@ -216,9 +216,7 @@ func prereleaseCheck(v, c *Version) bool {
 	return true
 }
 
-//-------------------------------------------------------------------
 // Constraint functions
-//-------------------------------------------------------------------
 
 type operator rune
 
