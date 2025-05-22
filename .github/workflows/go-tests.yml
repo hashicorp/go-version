@@ -30,7 +30,7 @@ jobs:
         run: go mod download
       
       - name: Cache / restore go modules
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # v4.2.3
         with:
           path: |
             ~/go/pkg/mod
@@ -71,13 +71,13 @@ jobs:
       
       # Save coverage report parts
       - name: Upload and save artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: Test Results-${{matrix.go-version}}
           path: ${{ env.TEST_RESULTS }}
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           path: coverage.out
           name: Coverage-report-${{matrix.go-version}}
