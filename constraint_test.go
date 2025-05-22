@@ -130,7 +130,41 @@ func TestConstraintPrerelease(t *testing.T) {
 		}
 	}
 }
+func TestConstraintIsPartOfSets(t *testing.T) {
+	cases := []struct {
+		leftConstraint  string
+		rightConstraint string
+		expectedEqual   bool
+	}{
+		{"0.0.1", "0.0.1", true},
+		{"5.0.1", "> 5.0.7", false},
+		{"~> 5.0", "5.0.7", true},
+		{"~> 5.0", "~> 5.0.2", true},
+		{"~> 5.0.77", "~> 5.0.2", false},
+		{"> 5.0.77", "5.0.55", false},
+		{"> 5.0.77", "5.0.78", true},
+		{"< 5.5.77", "5.0.78", true},
+		{"< 5.5.77,<4.5.77", "4.5.76", true},
+		{"<10.5.77,>4.5.77", "6.5.76", true},
+		{">10.5.77,<4.5.77", "16.5.76", false},
+	}
+	for _, tc := range cases {
+		leftCon, err := NewConstraint(tc.leftConstraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		rightCon, err := NewConstraint(tc.rightConstraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
 
+		actual := leftCon.IsPartOfSets(rightCon)
+		if actual != tc.expectedEqual {
+			t.Fatalf("Constraints: %s vs %s\nExpected: %t\nActual: %t",
+				tc.leftConstraint, tc.rightConstraint, tc.expectedEqual, actual)
+		}
+	}
+}
 func TestConstraintEqual(t *testing.T) {
 	cases := []struct {
 		leftConstraint  string
