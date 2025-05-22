@@ -178,7 +178,7 @@ func (c *Constraint) String() string {
 func parseSingle(v string) (*Constraint, error) {
 	matches := constraintRegexp.FindStringSubmatch(v)
 	if matches == nil {
-		return nil, fmt.Errorf("Malformed constraint: %s", v)
+		return nil, fmt.Errorf("malformed constraint: %s", v)
 	}
 
 	check, err := NewVersion(matches[2])
