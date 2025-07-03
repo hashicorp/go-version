@@ -731,7 +731,7 @@ func TestLessThanOrEqual(t *testing.T) {
 
 func BenchmarkVersionString(b *testing.B) {
 	v, _ := NewVersion("3.4.5-rc1+meta")
-	_ = v.String() // warm the cache
+	_ = v.String()
 
 	b.ResetTimer()
 	b.ReportAllocs()
