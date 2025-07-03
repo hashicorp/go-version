@@ -728,3 +728,14 @@ func TestLessThanOrEqual(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkVersionString(b *testing.B) {
+	v, _ := NewVersion("3.4.5-rc1+meta")
+	_ = v.String() // warm the cache
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = v.String()
+	}
+}
