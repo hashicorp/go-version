@@ -116,7 +116,7 @@ func Must(v *Version, err error) *Version {
 // GreaterThan, GreaterThanOrEqual or LessThanOrEqual methods.
 func (v *Version) Compare(other *Version) int {
 	// A quick, efficient equality check
-	if v.String() == other.String() {
+	if v.original == other.original {
 		return 0
 	}
 
