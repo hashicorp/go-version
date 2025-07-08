@@ -4,7 +4,6 @@
 package version
 
 import (
-	"bytes"
 	"database/sql/driver"
 	"fmt"
 	"regexp"
@@ -382,22 +381,30 @@ func (v *Version) Segments64() []int64 {
 // missing parts (1.0 => 1.0.0) will be made into a canonicalized form
 // as shown in the parenthesized examples.
 func (v *Version) String() string {
-	var buf bytes.Buffer
-	fmtParts := make([]string, len(v.segments))
+	var buf []byte
+	buf = v.bytes(buf)
+	return string(buf)
+}
+
+func (v *Version) bytes(buf []byte) []byte {
 	for i, s := range v.segments {
-		// We can ignore err here since we've pre-parsed the values in segments
-		str := strconv.FormatInt(s, 10)
-		fmtParts[i] = str
-	}
-	fmt.Fprintf(&buf, "%s", strings.Join(fmtParts, "."))
-	if v.pre != "" {
-		fmt.Fprintf(&buf, "-%s", v.pre)
-	}
-	if v.metadata != "" {
-		fmt.Fprintf(&buf, "+%s", v.metadata)
+		if i > 0 {
+			buf = append(buf, '.')
+		}
+		buf = strconv.AppendInt(buf, s, 10)
 	}
 
-	return buf.String()
+	if v.pre != "" {
+		buf = append(buf, '-')
+		buf = append(buf, v.pre...)
+	}
+
+	if v.metadata != "" {
+		buf = append(buf, '+')
+		buf = append(buf, v.metadata...)
+	}
+
+	return buf
 }
 
 // Original returns the original parsed version as-is, including any
