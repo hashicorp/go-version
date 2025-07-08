@@ -739,3 +739,24 @@ func BenchmarkVersionString(b *testing.B) {
 		_ = v.String()
 	}
 }
+
+func BenchmarkCompareVersionV1(b *testing.B) {
+	v, _ := NewVersion("3.4.5")
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		v.Compare(v)
+	}
+}
+
+func BenchmarkVersionCompareV2(b *testing.B) {
+	v, _ := NewVersion("1.2.3")
+	o, _ := NewVersion("v1.2.3.4")
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		v.Compare(o)
+	}
+}
