@@ -267,13 +267,10 @@ func constraintPessimistic(v, c *Version) bool {
 	if v.LessThan(c) {
 		return false
 	}
-	// We'll use this more than once, so grab the length now so it's a little cleaner
-	// to write the later checks
-	cs := len(c.segments)
 
 	// If the version being checked has less specificity than the constraint, then there
 	// is no way for the version to be valid against the constraint
-	if cs > len(v.segments) {
+	if c.si > len(v.segments) {
 		return false
 	}
 
@@ -286,10 +283,24 @@ func constraintPessimistic(v, c *Version) bool {
 		}
 	}
 
-	// Check the last part of the segment in the constraint. If the version segment at
+	// Check the last significant segment in the constraint. If the version segment at
 	// this index is less than the constraints segment at this index, then it cannot
 	// be valid against the constraint
-	if c.segments[cs-1] > v.segments[cs-1] {
+	lastSigIndex := c.si - 1
+	if c.segments[lastSigIndex] > v.segments[lastSigIndex] {
+		return false
+	}
+
+	// Upper bound check: prevent incrementing segments that shouldn't be incremented
+	// For ~> 1, prevent major version (index 0) from incrementing: 1.x.x but not 2.x.x
+	// For ~> 1.0, prevent major version (index 0) from incrementing: 1.x.x but not 2.x.x
+	// For ~> 1.0.0, prevent minor version (index 1) from incrementing: 1.0.x but not 1.1.x
+	// The rule is: use max(0, c.si - 2) for the upper bound segment
+	upperBoundIndex := 0
+	if c.si > 2 {
+		upperBoundIndex = c.si - 2
+	}
+	if v.segments[upperBoundIndex] >= c.segments[upperBoundIndex]+1 {
 		return false
 	}
 
