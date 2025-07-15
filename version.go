@@ -381,12 +381,11 @@ func (v *Version) Segments64() []int64 {
 // missing parts (1.0 => 1.0.0) will be made into a canonicalized form
 // as shown in the parenthesized examples.
 func (v *Version) String() string {
-	var buf []byte
-	buf = v.bytes(buf)
-	return string(buf)
+	return string(v.bytes())
 }
 
-func (v *Version) bytes(buf []byte) []byte {
+func (v *Version) bytes() []byte {
+	var buf []byte
 	for i, s := range v.segments {
 		if i > 0 {
 			buf = append(buf, '.')
