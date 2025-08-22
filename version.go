@@ -119,21 +119,14 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	// If the segments are the same, we must compare on prerelease info
+	// If the segments are the same, we must compare on prerelease and meta info
 	if v.equalSegments(other) {
-		preSelf := v.Prerelease()
-		preOther := other.Prerelease()
-		if preSelf == "" && preOther == "" {
-			return 0
-		}
-		if preSelf == "" {
-			return 1
-		}
-		if preOther == "" {
-			return -1
+		if res := comparePrereleases(v.Prerelease(), other.Prerelease()); res != 0 {
+			return res
 		}
 
-		return comparePrereleases(preSelf, preOther)
+		// if prerelease is same, return metadata comparison
+		return compareMetadata(v.Metadata(), other.Metadata())
 	}
 
 	segmentsSelf := v.Segments64()
@@ -258,6 +251,14 @@ func comparePrereleases(v string, other string) int {
 		return 0
 	}
 
+	if v == "" {
+		return 1
+	}
+
+	if other == "" {
+		return -1
+	}
+
 	// split both pre releases for analyse their parts
 	selfPreReleaseMeta := strings.Split(v, ".")
 	otherPreReleaseMeta := strings.Split(other, ".")
@@ -283,6 +284,73 @@ func comparePrereleases(v string, other string) int {
 		}
 
 		compare := comparePart(partSelfPre, partOtherPre)
+		// if parts are equals, continue the loop
+		if compare != 0 {
+			return compare
+		}
+	}
+
+	return 0
+}
+
+// compareMetadata compares two metadata strings with period separator.
+//
+// Metadata is compared by rules:
+// 1. If one metadata is empty, it is less than the other
+// 2. If the first segment differs, both are less than the other. This ensures `foo.1` and `bar.1` are never compared.
+// 3. If the first segment is the same, compare the lengths and values of remaining segments.
+func compareMetadata(self string, other string) int {
+	if self == other {
+		return 0
+	}
+	// TODO should we only assume this if metadta of form A.B.C...
+	// something with metadata > thing without
+	if self == "" {
+		return -1
+	}
+	if other == "" {
+		return 1
+	}
+
+	// split both for analyse their parts
+	selfMeta := strings.Split(self, ".")
+	otherMeta := strings.Split(other, ".")
+
+	selfSegOne, err1 := strconv.Atoi(selfMeta[0])
+	otherSegOne, err2 := strconv.Atoi(otherMeta[0])
+	if err1 != nil && err2 != nil {
+		// neither of these are numbers. If the strings are not the same, return
+		// less so we never compare different provider version (IE foo.1 and bar.2)
+		if selfMeta[0] != otherMeta[0] {
+			return -1
+		}
+	} else if selfSegOne < otherSegOne {
+		return 1
+	} else if selfSegOne > otherSegOne {
+		return -1
+	}
+
+	// if first segements are the same, compare the rest
+	selfMetaLen := len(selfMeta)
+	otherMetaLen := len(otherMeta)
+	biggestLen := otherMetaLen
+	if selfMetaLen > otherMetaLen {
+		biggestLen = selfMetaLen
+	}
+
+	// loop for parts to find the first difference
+	for i := 1; i < biggestLen; i++ {
+		partSelfMeta := ""
+		if i < selfMetaLen {
+			partSelfMeta = selfMeta[i]
+		}
+
+		partOtherMeta := ""
+		if i < otherMetaLen {
+			partOtherMeta = otherMeta[i]
+		}
+
+		compare := comparePart(partSelfMeta, partOtherMeta)
 		// if parts are equals, continue the loop
 		if compare != 0 {
 			return compare
