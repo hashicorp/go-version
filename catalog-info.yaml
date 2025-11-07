@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: go-version
+  description: |
+    A fork of tje go library `go-version` create by HashiCorp.
+    Original source code can be found here: https://github.com/hashicorp/go-version
+    The only reason we made a fork was because we had some other requirements in the regex being used in the original library.
+  annotations: 
+    github.com/project-slug: BESTSELLER/go-version
+spec:
+  type: library
+  lifecycle: production
+  owner: engineering-services
