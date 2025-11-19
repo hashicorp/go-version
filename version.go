@@ -9,13 +9,30 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // The compiled regular expression used to test the validity of a version.
 var (
-	versionRegexp *regexp.Regexp
-	semverRegexp  *regexp.Regexp
+	versionRegexp     *regexp.Regexp
+	versionRegexpOnce sync.Once
+	semverRegexp      *regexp.Regexp
+	semverRegexpOnce  sync.Once
 )
+
+func getVersionRegexp() *regexp.Regexp {
+	versionRegexpOnce.Do(func() {
+		versionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
+	})
+	return versionRegexp
+}
+
+func getSemverRegexp() *regexp.Regexp {
+	semverRegexpOnce.Do(func() {
+		semverRegexp = regexp.MustCompile("^" + SemverRegexpRaw + "$")
+	})
+	return semverRegexp
+}
 
 // The raw regular expression string used for testing the validity
 // of a version.
@@ -41,22 +58,17 @@ type Version struct {
 	original string
 }
 
-func init() {
-	versionRegexp = regexp.MustCompile("^" + VersionRegexpRaw + "$")
-	semverRegexp = regexp.MustCompile("^" + SemverRegexpRaw + "$")
-}
-
 // NewVersion parses the given version and returns a new
 // Version.
 func NewVersion(v string) (*Version, error) {
-	return newVersion(v, versionRegexp)
+	return newVersion(v, getVersionRegexp())
 }
 
 // NewSemver parses the given version and returns a new
 // Version that adheres strictly to SemVer specs
 // https://semver.org/
 func NewSemver(v string) (*Version, error) {
-	return newVersion(v, semverRegexp)
+	return newVersion(v, getSemverRegexp())
 }
 
 func newVersion(v string, pattern *regexp.Regexp) (*Version, error) {
