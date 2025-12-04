@@ -1,6 +1,11 @@
+// Copyright IBM Corp. 2014, 2025
+// SPDX-License-Identifier: MPL-2.0
+
 package version
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -21,19 +26,21 @@ func TestNewVersion(t *testing.T) {
 		{"1.2-beta.5", false},
 		{"\n1.2", true},
 		{"1.2.0-x.Y.0+metadata", false},
-		{"1.2.0-x.Y.0+metadata-width-hypen", false},
-		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"1.2.0.4-x.Y.0+metadata", false},
-		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
 		{"1.2.0-X-1.2.0+metadata~dist", false},
-		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"v1.2.3", false},
 		{"foo1.2.3", true},
 		{"1.7rc2", false},
 		{"v1.7rc2", false},
 		{"1.0-", false},
+		{"controller-v0.40.2", false},
+		{"azure-cli-v1.4.2", false},
 	}
 
 	for _, tc := range cases {
@@ -62,19 +69,21 @@ func TestNewSemver(t *testing.T) {
 		{"1.2-beta.5", false},
 		{"\n1.2", true},
 		{"1.2.0-x.Y.0+metadata", false},
-		{"1.2.0-x.Y.0+metadata-width-hypen", false},
-		{"1.2.3-rc1-with-hypen", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"1.2.0.4-x.Y.0+metadata", false},
-		{"1.2.0.4-x.Y.0+metadata-width-hypen", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
 		{"1.2.0-X-1.2.0+metadata~dist", false},
-		{"1.2.3.4-rc1-with-hypen", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
 		{"1.2.3.4", false},
 		{"v1.2.3", false},
 		{"foo1.2.3", true},
 		{"1.7rc2", true},
 		{"v1.7rc2", true},
 		{"1.0-", true},
+		{"controller-v0.40.2", false},
+		{"azure-cli-v1.4.2", false},
 	}
 
 	for _, tc := range cases {
@@ -83,6 +92,38 @@ func TestNewSemver(t *testing.T) {
 			t.Fatalf("expected error for version: %q", tc.version)
 		} else if !tc.err && err != nil {
 			t.Fatalf("error for version %q: %s", tc.version, err)
+		}
+	}
+}
+
+func TestCore(t *testing.T) {
+	cases := []struct {
+		v1 string
+		v2 string
+	}{
+		{"1.2.3", "1.2.3"},
+		{"2.3.4-alpha1", "2.3.4"},
+		{"3.4.5alpha1", "3.4.5"},
+		{"1.2.3-2", "1.2.3"},
+		{"4.5.6-beta1+meta", "4.5.6"},
+		{"5.6.7.1.2.3", "5.6.7"},
+	}
+
+	for _, tc := range cases {
+		v1, err := NewVersion(tc.v1)
+		if err != nil {
+			t.Fatalf("error for version %q: %s", tc.v1, err)
+		}
+		v2, err := NewVersion(tc.v2)
+		if err != nil {
+			t.Fatalf("error for version %q: %s", tc.v2, err)
+		}
+
+		actual := v1.Core()
+		expected := v2
+
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("expected: %s\nactual: %s", expected, actual)
 		}
 	}
 }
@@ -110,6 +151,12 @@ func TestVersionCompare(t *testing.T) {
 		{"1.7rc2", "1.7rc1", 1},
 		{"1.7rc2", "1.7", -1},
 		{"1.2.0", "1.2.0-X-1.2.0+metadata~dist", 1},
+		{"controller-v0.40.2", "controller-v0.40.3", -1},
+		{"0.40.4", "controller-v0.40.2", 1},
+		{"0.40.4", "controller-v0.40.4", 0},
+		{"azure-cli-v1.4.2", "azure-cli-v1.4.2", 0},
+		{"azure-cli-v1.4.1", "azure-cli-v1.4.2", -1},
+		{"1.4.3", "azure-cli-v1.4.2", 1},
 	}
 
 	for _, tc := range cases {
@@ -168,6 +215,32 @@ func TestVersionCompare_versionAndSemver(t *testing.T) {
 				"%s <=> %s\nexpected: %d\n actual: %d",
 				tc.versionRaw, tc.semverRaw, tc.expected, actual,
 			)
+		}
+	}
+}
+
+func TestVersionEqual_nil(t *testing.T) {
+	mustVersion := func(v string) *Version {
+		ver, err := NewVersion(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ver
+	}
+	cases := []struct {
+		leftVersion  *Version
+		rightVersion *Version
+		expected     bool
+	}{
+		{mustVersion("1.0.0"), nil, false},
+		{nil, mustVersion("1.0.0"), false},
+		{nil, nil, true},
+	}
+
+	for _, tc := range cases {
+		given := tc.leftVersion.Equal(tc.rightVersion)
+		if given != tc.expected {
+			t.Fatalf("expected Equal to nil to be %t", tc.expected)
 		}
 	}
 }
@@ -331,6 +404,75 @@ func TestVersionSegments64(t *testing.T) {
 			if actual[0] != expected {
 				t.Fatalf("Segments64 is mutable")
 			}
+		}
+	}
+}
+
+func TestJsonMarshal(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"1.2.3", false},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.0-X-1.2.0+metadata~dist", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
+		{"1.2.3.4", false},
+	}
+
+	for _, tc := range cases {
+		v, err1 := NewVersion(tc.version)
+		if err1 != nil {
+			t.Fatalf("error for version %q: %s", tc.version, err1)
+		}
+
+		parsed, err2 := json.Marshal(v)
+		if err2 != nil {
+			t.Fatalf("error marshaling version %q: %s", tc.version, err2)
+		}
+		result := string(parsed)
+		expected := fmt.Sprintf("%q", tc.version)
+		if result != expected && !tc.err {
+			t.Fatalf("Error marshaling unexpected marshaled content: result=%q expected=%q", result, expected)
+		}
+	}
+}
+
+func TestJsonUnmarshal(t *testing.T) {
+	cases := []struct {
+		version string
+		err     bool
+	}{
+		{"1.2.3", false},
+		{"1.2.0-x.Y.0+metadata", false},
+		{"1.2.0-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.3-rc1-with-hyphen", false},
+		{"1.2.3.4", false},
+		{"1.2.0.4-x.Y.0+metadata", false},
+		{"1.2.0.4-x.Y.0+metadata-width-hyphen", false},
+		{"1.2.0-X-1.2.0+metadata~dist", false},
+		{"1.2.3.4-rc1-with-hyphen", false},
+		{"1.2.3.4", false},
+	}
+
+	for _, tc := range cases {
+		expected, err1 := NewVersion(tc.version)
+		if err1 != nil {
+			t.Fatalf("err: %s", err1)
+		}
+
+		actual := &Version{}
+		err2 := json.Unmarshal([]byte(fmt.Sprintf("%q", tc.version)), actual)
+		if err2 != nil {
+			t.Fatalf("error unmarshaling version: %s", err2)
+		}
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("error unmarshaling, unexpected object content: actual=%q expected=%q", actual, expected)
 		}
 	}
 }
@@ -594,5 +736,37 @@ func TestLessThanOrEqual(t *testing.T) {
 				tc.v1, tc.v2,
 				expected, actual)
 		}
+	}
+}
+
+func BenchmarkVersionString(b *testing.B) {
+	v, _ := NewVersion("3.4.5-rc1+meta")
+	_ = v.String()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = v.String()
+	}
+}
+
+func BenchmarkCompareVersionV1(b *testing.B) {
+	v, _ := NewVersion("3.4.5")
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		v.Compare(v)
+	}
+}
+
+func BenchmarkVersionCompareV2(b *testing.B) {
+	v, _ := NewVersion("1.2.3")
+	o, _ := NewVersion("v1.2.3.4")
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		v.Compare(o)
 	}
 }

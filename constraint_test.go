@@ -1,6 +1,12 @@
+// Copyright IBM Corp. 2014, 2025
+// SPDX-License-Identifier: MPL-2.0
+
 package version
 
 import (
+	"fmt"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -94,6 +100,132 @@ func TestConstraintCheck(t *testing.T) {
 			t.Fatalf("Version: %s\nConstraint: %s\nExpected: %#v",
 				tc.version, tc.constraint, expected)
 		}
+	}
+}
+
+func TestConstraintPrerelease(t *testing.T) {
+	cases := []struct {
+		constraint string
+		prerelease bool
+	}{
+		{"= 1.0", false},
+		{"= 1.0-beta", true},
+		{"~> 2.1.0", false},
+		{"~> 2.1.0-dev", true},
+		{"> 2.0", false},
+		{">= 2.1.0-a", true},
+	}
+
+	for _, tc := range cases {
+		c, err := parseSingle(tc.constraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := c.Prerelease()
+		expected := tc.prerelease
+		if actual != expected {
+			t.Fatalf("Constraint: %s\nExpected: %#v",
+				tc.constraint, expected)
+		}
+	}
+}
+
+func TestConstraintEqual(t *testing.T) {
+	cases := []struct {
+		leftConstraint  string
+		rightConstraint string
+		expectedEqual   bool
+	}{
+		{
+			"0.0.1",
+			"0.0.1",
+			true,
+		},
+		{ // whitespaces
+			" 0.0.1 ",
+			"0.0.1",
+			true,
+		},
+		{ // equal op implied
+			"=0.0.1 ",
+			"0.0.1",
+			true,
+		},
+		{ // version difference
+			"=0.0.1",
+			"=0.0.2",
+			false,
+		},
+		{ // operator difference
+			">0.0.1",
+			"=0.0.1",
+			false,
+		},
+		{ // different order
+			">0.1.0, <=1.0.0",
+			"<=1.0.0, >0.1.0",
+			true,
+		},
+	}
+
+	for _, tc := range cases {
+		leftCon, err := NewConstraint(tc.leftConstraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		rightCon, err := NewConstraint(tc.rightConstraint)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+
+		actual := leftCon.Equals(rightCon)
+		if actual != tc.expectedEqual {
+			t.Fatalf("Constraints: %s vs %s\nExpected: %t\nActual: %t",
+				tc.leftConstraint, tc.rightConstraint, tc.expectedEqual, actual)
+		}
+	}
+}
+
+func TestConstraint_sort(t *testing.T) {
+	cases := []struct {
+		constraint          string
+		expectedConstraints string
+	}{
+		{
+			">= 0.1.0,< 1.12",
+			"< 1.12,>= 0.1.0",
+		},
+		{
+			"< 1.12,>= 0.1.0",
+			"< 1.12,>= 0.1.0",
+		},
+		{
+			"< 1.12,>= 0.1.0,0.2.0",
+			"< 1.12,0.2.0,>= 0.1.0",
+		},
+		{
+			">1.0,>0.1.0,>0.3.0,>0.2.0",
+			">0.1.0,>0.2.0,>0.3.0,>1.0",
+		},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			c, err := NewConstraint(tc.constraint)
+			if err != nil {
+				t.Fatalf("err: %s", err)
+			}
+
+			sort.Sort(c)
+
+			actual := c.String()
+
+			if !reflect.DeepEqual(actual, tc.expectedConstraints) {
+				t.Fatalf("unexpected order\nexpected: %#v\nactual: %#v",
+					tc.expectedConstraints, actual)
+			}
+		})
 	}
 }
 
