@@ -37,13 +37,13 @@ func getSemverRegexp() *regexp.Regexp {
 // The raw regular expression string used for testing the validity
 // of a version.
 const (
-	VersionRegexpRaw string = `(?:\w+\-)*v?([0-9]+(\.[0-9]+)*?)` +
+	VersionRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 		`(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?` +
 		`(\+([0-9A-Za-z\-~]+(\.[0-9A-Za-z\-~]+)*))?` +
 		`?`
 
 	// SemverRegexpRaw requires a separator between version and prerelease
-	SemverRegexpRaw string = `(?:\w+\-)*v?([0-9]+(\.[0-9]+)*?)` +
+	SemverRegexpRaw string = `v?([0-9]+(\.[0-9]+)*?)` +
 		`(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?` +
 		`(\+([0-9A-Za-z\-~]+(\.[0-9A-Za-z\-~]+)*))?` +
 		`?`
@@ -80,7 +80,9 @@ type Version struct {
 func NewVersion(v string, opts ...Option) (*Version, error) {
 	options := &options{}
 	for _, opt := range opts {
-		opt(options)
+		if opt != nil {
+			opt(options)
+		}
 	}
 
 	vToParse := v

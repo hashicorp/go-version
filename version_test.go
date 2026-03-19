@@ -39,8 +39,8 @@ func TestNewVersion(t *testing.T) {
 		{"1.7rc2", false},
 		{"v1.7rc2", false},
 		{"1.0-", false},
-		{"controller-v0.40.2", false},
-		{"azure-cli-v1.4.2", false},
+		{"controller-v0.40.2", true},
+		{"azure-cli-v1.4.2", true},
 	}
 
 	for _, tc := range cases {
@@ -109,8 +109,8 @@ func TestNewSemver(t *testing.T) {
 		{"1.7rc2", true},
 		{"v1.7rc2", true},
 		{"1.0-", true},
-		{"controller-v0.40.2", false},
-		{"azure-cli-v1.4.2", false},
+		{"controller-v0.40.2", true},
+		{"azure-cli-v1.4.2", true},
 	}
 
 	for _, tc := range cases {
