@@ -73,10 +73,13 @@ type Version struct {
 	segments []int64
 	si       int
 	original string
+	prefix   string
 }
 
-// NewVersion parses the given version and returns a new
-// Version.
+// NewVersion parses the given version and returns a new Version.
+//
+// Optional parsing behavior can be enabled with Option values such as
+// WithPrefix, which validates and strips an expected prefix before parsing.
 func NewVersion(v string, opts ...Option) (*Version, error) {
 	options := &options{}
 	for _, opt := range opts {
@@ -97,6 +100,7 @@ func NewVersion(v string, opts ...Option) (*Version, error) {
 	if err != nil {
 		return nil, err
 	}
+	ver.prefix = options.prefix
 	ver.original = v
 	return ver, nil
 }
@@ -459,6 +463,11 @@ func (v *Version) bytes() []byte {
 // potential whitespace, `v` prefix, etc.
 func (v *Version) Original() string {
 	return v.original
+}
+
+// Prefix returns the explicit prefix used with WithPrefix, if any.
+func (v *Version) Prefix() string {
+	return v.prefix
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler interface.
