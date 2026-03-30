@@ -3,6 +3,8 @@ name: go-tests
 on:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
 
 env:
   TEST_RESULTS: /tmp/test-results
