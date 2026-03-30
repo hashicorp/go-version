@@ -1,3 +1,18 @@
+# 1.9.0 (Mar 30, 2026)
+
+ENHANCEMENTS:
+
+Support parsing versions with custom prefixes via opt-in option in https://github.com/hashicorp/go-version/pull/79
+
+INTERNAL:
+
+- Bump the github-actions-backward-compatible group across 1 directory with 2 updates in https://github.com/hashicorp/go-version/pull/179
+- Bump the github-actions-breaking group with 4 updates in https://github.com/hashicorp/go-version/pull/180
+- Bump the github-actions-backward-compatible group with 3 updates in https://github.com/hashicorp/go-version/pull/182
+- Update GitHub Actions to trigger on pull requests and update go version in https://github.com/hashicorp/go-version/pull/185
+- Bump actions/upload-artifact from 6.0.0 to 7.0.0 in the github-actions-breaking group across 1 directory in https://github.com/hashicorp/go-version/pull/183
+- Bump the github-actions-backward-compatible group across 1 directory with 2 updates in https://github.com/hashicorp/go-version/pull/186
+
 # 1.8.0 (Nov 28, 2025)
 
 ENHANCEMENTS:
