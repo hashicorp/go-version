@@ -626,6 +626,30 @@ func TestVersionString(t *testing.T) {
 	}
 }
 
+func TestVersionStringZeroValue(t *testing.T) {
+	// A zero-value Version compares equal to "0.0.0" (see Compare/Equal),
+	// so its String() must render the same canonical value instead of an
+	// empty string. Regression test for hashicorp/go-version#170.
+	zero := &Version{}
+	if actual := zero.String(); actual != "0.0.0" {
+		t.Fatalf("expected zero-value String() to be %q, got %q", "0.0.0", actual)
+	}
+
+	semverZero, err := NewSemver("0.0.0")
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if !zero.Equal(semverZero) {
+		t.Fatalf("expected zero-value Version to equal %q", semverZero)
+	}
+	if zero.String() != semverZero.String() {
+		t.Fatalf(
+			"equal versions disagree on String(): zero=%q semverZero=%q",
+			zero.String(), semverZero.String(),
+		)
+	}
+}
+
 func TestEqual(t *testing.T) {
 	cases := []struct {
 		v1       string

@@ -439,7 +439,16 @@ func (v *Version) String() string {
 
 func (v *Version) bytes() []byte {
 	var buf []byte
-	for i, s := range v.segments {
+	segments := v.segments
+	if len(segments) == 0 {
+		// A zero-value Version (e.g. &Version{}) has no parsed segments.
+		// Render it as the canonical semver zero so String() stays
+		// consistent with Compare/Equal, which already treat it as equal
+		// to "0.0.0", and with the MAJOR.MINOR.PATCH minimum that
+		// newVersion pads every parsed version to.
+		segments = []int64{0, 0, 0}
+	}
+	for i, s := range segments {
 		if i > 0 {
 			buf = append(buf, '.')
 		}
