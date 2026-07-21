@@ -439,7 +439,13 @@ func (v *Version) String() string {
 
 func (v *Version) bytes() []byte {
 	var buf []byte
-	for i, s := range v.segments {
+	// A zero value Version has no segments but compares equal to 0.0.0.
+	// Print the same canonical form so String matches Equal.
+	segments := v.segments
+	if len(segments) == 0 {
+		segments = []int64{0, 0, 0}
+	}
+	for i, s := range segments {
 		if i > 0 {
 			buf = append(buf, '.')
 		}

@@ -673,6 +673,25 @@ func TestEqual(t *testing.T) {
 	}
 }
 
+func TestEmptyVersionStringMatchesZero(t *testing.T) {
+	// Zero-value Version compares equal to 0.0.0 but used to print "".
+	empty := &Version{}
+	zero, err := NewSemver("0.0.0")
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	if !empty.Equal(zero) {
+		t.Fatalf("expected empty Version to Equal 0.0.0")
+	}
+	if got := empty.String(); got != "0.0.0" {
+		t.Fatalf("expected empty Version.String() = 0.0.0, got %q", got)
+	}
+	if got := zero.String(); got != "0.0.0" {
+		t.Fatalf("expected 0.0.0 String() = 0.0.0, got %q", got)
+	}
+}
+
 func TestGreaterThan(t *testing.T) {
 	cases := []struct {
 		v1       string
