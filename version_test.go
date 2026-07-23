@@ -911,3 +911,20 @@ func BenchmarkVersionCompareV2(b *testing.B) {
 		v.Compare(o)
 	}
 }
+
+func TestNewVersionTrimSpace(t *testing.T) {
+	v, err := NewVersion(" 1.2.3 ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v.String() != "1.2.3" {
+		t.Fatalf("got %s", v)
+	}
+	v, err = NewSemver(" 2.0.0 ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v.String() != "2.0.0" {
+		t.Fatalf("semver got %s", v)
+	}
+}

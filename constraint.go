@@ -56,10 +56,10 @@ type constraintOperation struct {
 // constraint string. The string must be a comma-separated list of
 // constraints.
 func NewConstraint(v string) (Constraints, error) {
-	vs := strings.Split(v, ",")
+	vs := strings.Split(strings.TrimSpace(v), ",")
 	result := make([]*Constraint, len(vs))
 	for i, single := range vs {
-		c, err := parseSingle(single)
+		c, err := parseSingle(strings.TrimSpace(single))
 		if err != nil {
 			return nil, err
 		}

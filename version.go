@@ -88,6 +88,7 @@ func NewVersion(v string, opts ...Option) (*Version, error) {
 		}
 	}
 
+	v = strings.TrimSpace(v)
 	vToParse := v
 	if options.prefix != "" {
 		if !strings.HasPrefix(v, options.prefix) {
@@ -109,7 +110,7 @@ func NewVersion(v string, opts ...Option) (*Version, error) {
 // Version that adheres strictly to SemVer specs
 // https://semver.org/
 func NewSemver(v string) (*Version, error) {
-	return newVersion(v, getSemverRegexp())
+	return newVersion(strings.TrimSpace(v), getSemverRegexp())
 }
 
 func newVersion(v string, pattern *regexp.Regexp) (*Version, error) {
