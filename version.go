@@ -6,6 +6,7 @@ package version
 import (
 	"database/sql/driver"
 	"fmt"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -263,19 +264,8 @@ func comparePart(preSelf string, preOther string) int {
 		return 0
 	}
 
-	var selfInt int64
-	selfNumeric := true
-	selfInt, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	var otherInt int64
-	otherNumeric := true
-	otherInt, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
+	selfInt, selfNumeric := new(big.Int).SetString(preSelf, 10)
+	otherInt, otherNumeric := new(big.Int).SetString(preOther, 10)
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
@@ -296,9 +286,9 @@ func comparePart(preSelf string, preOther string) int {
 		return -1
 	} else if !selfNumeric && otherNumeric {
 		return 1
-	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
-		return 1
-	} else if selfInt > otherInt {
+	} else if selfNumeric && otherNumeric {
+		return selfInt.Cmp(otherInt)
+	} else if preSelf > preOther {
 		return 1
 	}
 
