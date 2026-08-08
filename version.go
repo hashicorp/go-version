@@ -6,10 +6,12 @@ package version
 import (
 	"database/sql/driver"
 	"fmt"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 )
 
 // The compiled regular expression used to test the validity of a version.
@@ -258,24 +260,25 @@ func allZero(segs []int64) bool {
 	return true
 }
 
+func isNumericIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if !unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return true
+}
+
 func comparePart(preSelf string, preOther string) int {
 	if preSelf == preOther {
 		return 0
 	}
 
-	var selfInt int64
-	selfNumeric := true
-	selfInt, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	var otherInt int64
-	otherNumeric := true
-	otherInt, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
+	selfNumeric := isNumericIdent(preSelf)
+	otherNumeric := isNumericIdent(preOther)
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
@@ -294,15 +297,22 @@ func comparePart(preSelf string, preOther string) int {
 
 	if selfNumeric && !otherNumeric {
 		return -1
-	} else if !selfNumeric && otherNumeric {
-		return 1
-	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
-		return 1
-	} else if selfInt > otherInt {
+	}
+	if !selfNumeric && otherNumeric {
 		return 1
 	}
+	if !selfNumeric && !otherNumeric {
+		if preSelf > preOther {
+			return 1
+		}
+		return -1
+	}
 
-	return -1
+	// Both numeric: compare as arbitrary-precision integers so values larger
+	// than int64 still order correctly (semver §11.4.1).
+	selfInt, _ := new(big.Int).SetString(preSelf, 10)
+	otherInt, _ := new(big.Int).SetString(preOther, 10)
+	return selfInt.Cmp(otherInt)
 }
 
 func comparePrereleases(v string, other string) int {
