@@ -6,6 +6,7 @@ package version
 import (
 	"database/sql/driver"
 	"fmt"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -258,24 +259,38 @@ func allZero(segs []int64) bool {
 	return true
 }
 
+// parsePreReleaseInt treats strconv overflow as still numeric so huge digit-only
+// identifiers keep SemVer numeric ordering instead of falling back to text.
+func parsePreReleaseInt(s string) (n int64, numeric bool, overflow bool) {
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err == nil {
+		return n, true, false
+	}
+	if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrRange {
+		return 0, true, true
+	}
+	return 0, false, false
+}
+
+func compareOverflowingInts(a, b string) int {
+	ai, aOK := new(big.Int).SetString(a, 10)
+	bi, bOK := new(big.Int).SetString(b, 10)
+	if aOK && bOK {
+		return ai.Cmp(bi)
+	}
+	if a > b {
+		return 1
+	}
+	return -1
+}
+
 func comparePart(preSelf string, preOther string) int {
 	if preSelf == preOther {
 		return 0
 	}
 
-	var selfInt int64
-	selfNumeric := true
-	selfInt, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	var otherInt int64
-	otherNumeric := true
-	otherInt, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
+	selfInt, selfNumeric, selfOverflow := parsePreReleaseInt(preSelf)
+	otherInt, otherNumeric, otherOverflow := parsePreReleaseInt(preOther)
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
@@ -298,8 +313,13 @@ func comparePart(preSelf string, preOther string) int {
 		return 1
 	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
 		return 1
-	} else if selfInt > otherInt {
-		return 1
+	} else if selfNumeric && otherNumeric {
+		if selfOverflow || otherOverflow {
+			return compareOverflowingInts(preSelf, preOther)
+		}
+		if selfInt > otherInt {
+			return 1
+		}
 	}
 
 	return -1
