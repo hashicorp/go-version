@@ -277,19 +277,18 @@ func comparePart(preSelf string, preOther string) int {
 		otherNumeric = false
 	}
 
-	// if a part is empty, we use the other to decide
+	// A shorter prerelease (one that has run out of fields) has lower
+	// precedence than a longer one with the same leading identifiers, whatever
+	// the present field's type (SemVer 2.0.0 §11.4.4). Deciding by the other
+	// field's type made Compare non-transitive: with alpha < alpha.1 <
+	// alpha.beta, alpha was reported greater than alpha.beta, which also
+	// corrupts sort.Sort of a Collection.
 	if preSelf == "" {
-		if otherNumeric {
-			return -1
-		}
-		return 1
+		return -1
 	}
 
 	if preOther == "" {
-		if selfNumeric {
-			return 1
-		}
-		return -1
+		return 1
 	}
 
 	if selfNumeric && !otherNumeric {
