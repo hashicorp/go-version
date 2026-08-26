@@ -258,24 +258,51 @@ func allZero(segs []int64) bool {
 	return true
 }
 
+func isNumericIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// compareNumericIdents compares digit-only prerelease identifiers as numbers,
+// including values that do not fit in int64 (#204).
+func compareNumericIdents(a, b string) int {
+	a = strings.TrimLeft(a, "0")
+	b = strings.TrimLeft(b, "0")
+	if a == "" {
+		a = "0"
+	}
+	if b == "" {
+		b = "0"
+	}
+	if len(a) != len(b) {
+		if len(a) < len(b) {
+			return -1
+		}
+		return 1
+	}
+	if a < b {
+		return -1
+	}
+	if a > b {
+		return 1
+	}
+	return 0
+}
+
 func comparePart(preSelf string, preOther string) int {
 	if preSelf == preOther {
 		return 0
 	}
 
-	var selfInt int64
-	selfNumeric := true
-	selfInt, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	var otherInt int64
-	otherNumeric := true
-	otherInt, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
+	selfNumeric := isNumericIdent(preSelf)
+	otherNumeric := isNumericIdent(preOther)
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
@@ -294,14 +321,16 @@ func comparePart(preSelf string, preOther string) int {
 
 	if selfNumeric && !otherNumeric {
 		return -1
-	} else if !selfNumeric && otherNumeric {
-		return 1
-	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
-		return 1
-	} else if selfInt > otherInt {
+	}
+	if !selfNumeric && otherNumeric {
 		return 1
 	}
-
+	if selfNumeric && otherNumeric {
+		return compareNumericIdents(preSelf, preOther)
+	}
+	if preSelf > preOther {
+		return 1
+	}
 	return -1
 }
 
