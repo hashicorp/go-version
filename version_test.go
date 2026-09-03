@@ -385,7 +385,9 @@ func TestComparePreReleases(t *testing.T) {
 		{"3.0-alpha.3", "3.0-rc.1", -1},
 		{"3.0-alpha3", "3.0-rc1", -1},
 		{"3.0-alpha.1", "3.0-alpha.beta", -1},
-		{"5.4-alpha", "5.4-alpha.beta", 1},
+		// A shorter prerelease is lower (SemVer 2.0.0 §11.4.4); this used to
+		// assert 1, which made Compare non-transitive against the line above.
+		{"5.4-alpha", "5.4-alpha.beta", -1},
 		{"v1.2-beta.2", "v1.2-beta.2", 0},
 		{"v1.2-beta.1", "v1.2-beta.2", -1},
 		{"v3.2-alpha.1", "v3.2-alpha", 1},
@@ -915,5 +917,24 @@ func BenchmarkVersionCompareV2(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		v.Compare(o)
+	}
+}
+
+func TestPrereleaseCompareIsTransitive(t *testing.T) {
+	// alpha < alpha.1 < alpha.beta, so alpha must be < alpha.beta. Deciding an
+	// empty prerelease field by the other field's type used to report alpha as
+	// greater than alpha.beta -- a non-transitive result that also corrupts
+	// sort.Sort of a Collection.
+	a := Must(NewSemver("1.0.0-alpha"))
+	b := Must(NewSemver("1.0.0-alpha.1"))
+	c := Must(NewSemver("1.0.0-alpha.beta"))
+	if a.Compare(b) >= 0 || b.Compare(c) >= 0 {
+		t.Fatalf("setup: want alpha < alpha.1 < alpha.beta")
+	}
+	if a.Compare(c) >= 0 {
+		t.Errorf("alpha should be < alpha.beta, got Compare = %d", a.Compare(c))
+	}
+	if c.Compare(a) <= 0 {
+		t.Errorf("alpha.beta should be > alpha, got Compare = %d", c.Compare(a))
 	}
 }
