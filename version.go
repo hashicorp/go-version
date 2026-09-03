@@ -258,24 +258,49 @@ func allZero(segs []int64) bool {
 	return true
 }
 
+// isNumericIdentifier reports whether s consists entirely of ASCII digits.
+// Per the semver spec, numeric identifiers must not have leading zeroes,
+// so a longer string always represents a larger value and lexicographic
+// order equals numeric order for strings of the same length.
+func isNumericIdentifier(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// compareNumericIdentifiers compares two all-digit strings by value without
+// parsing them into a fixed-width integer type, correctly handling values
+// larger than math.MaxInt64.
+func compareNumericIdentifiers(a, b string) int {
+	if len(a) != len(b) {
+		if len(a) > len(b) {
+			return 1
+		}
+		return -1
+	}
+	// Same length: lexicographic order equals numeric order.
+	if a > b {
+		return 1
+	}
+	if a < b {
+		return -1
+	}
+	return 0
+}
+
 func comparePart(preSelf string, preOther string) int {
 	if preSelf == preOther {
 		return 0
 	}
 
-	var selfInt int64
-	selfNumeric := true
-	selfInt, err := strconv.ParseInt(preSelf, 10, 64)
-	if err != nil {
-		selfNumeric = false
-	}
-
-	var otherInt int64
-	otherNumeric := true
-	otherInt, err = strconv.ParseInt(preOther, 10, 64)
-	if err != nil {
-		otherNumeric = false
-	}
+	selfNumeric := isNumericIdentifier(preSelf)
+	otherNumeric := isNumericIdentifier(preOther)
 
 	// if a part is empty, we use the other to decide
 	if preSelf == "" {
@@ -296,9 +321,9 @@ func comparePart(preSelf string, preOther string) int {
 		return -1
 	} else if !selfNumeric && otherNumeric {
 		return 1
-	} else if !selfNumeric && !otherNumeric && preSelf > preOther {
-		return 1
-	} else if selfInt > otherInt {
+	} else if selfNumeric && otherNumeric {
+		return compareNumericIdentifiers(preSelf, preOther)
+	} else if preSelf > preOther {
 		return 1
 	}
 
