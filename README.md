@@ -10,6 +10,18 @@ versions, can increment versions, etc.
 
 Versions used with go-version must follow [SemVer](http://semver.org/).
 
+## Standard library `go/version`
+
+Go 1.22 added the standard library [`go/version`](https://pkg.go.dev/go/version)
+package. It is a good choice when you only need to validate or compare Go
+toolchain version strings such as `go1.22`, `go1.22.3`, or `go1.23rc1`.
+
+Use `go-version` when you need to work with general SemVer versions rather
+than Go toolchain versions. In addition to parsing and comparing versions,
+this package supports version constraints such as `>= 1.0, < 2.0`, prerelease
+and build metadata, sorting collections of parsed versions, and versions with
+application-specific prefixes.
+
 ## Installation and Usage
 
 Package documentation can be found on
