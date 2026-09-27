@@ -917,3 +917,34 @@ func BenchmarkVersionCompareV2(b *testing.B) {
 		v.Compare(o)
 	}
 }
+
+func TestComparePrereleaseAcrossSegmentLengths(t *testing.T) {
+	cases := []struct {
+		v1, v2 string
+		want   int
+	}{
+		{"1.0.0-alpha", "1.0.0", -1},
+		{"1.0.0", "1.0.0.0", 0},
+		{"1.0.0-alpha", "1.0.0.0", -1},
+		{"1.0.0.0-rc", "1.0.0", -1},
+		{"1.0.0.0", "1.0.0-alpha", 1},
+		{"1.0.0-alpha", "1.0.0-beta", -1},
+		{"1.0.0.0-alpha", "1.0.0-beta", -1},
+	}
+	for _, tc := range cases {
+		a := Must(NewVersion(tc.v1))
+		b := Must(NewVersion(tc.v2))
+		if got := a.Compare(b); got != tc.want {
+			t.Fatalf("Compare(%s, %s) = %d, want %d", tc.v1, tc.v2, got, tc.want)
+		}
+		if got := b.Compare(a); got != -tc.want {
+			t.Fatalf("Compare(%s, %s) = %d, want %d", tc.v2, tc.v1, got, -tc.want)
+		}
+	}
+
+	alpha := Must(NewVersion("1.0.0-alpha"))
+	cs := MustConstraints(NewConstraint("= 1.0.0.0"))
+	if cs.Check(alpha) {
+		t.Fatalf("= 1.0.0.0 should not match 1.0.0-alpha")
+	}
+}
