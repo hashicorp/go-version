@@ -286,6 +286,12 @@ func constraintPessimistic(v, c *Version) bool {
 		return false
 	}
 
+	// When a major-only version constraint like ~> 18 is given, enforce that the
+	// major segment cannot increment (i.e. version must be < 19.0.0).
+	if c.si == 1 && v.segments[0] != c.segments[0] {
+		return false
+	}
+
 	// Check the segments in the constraint against those in the version. If the version
 	// being checked, at any point, does not have the same values in each index of the
 	// constraints segments, then it cannot be valid against the constraint.
