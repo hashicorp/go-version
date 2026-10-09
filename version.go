@@ -172,23 +172,6 @@ func (v *Version) Compare(other *Version) int {
 		return 0
 	}
 
-	// If the segments are the same, we must compare on prerelease info
-	if v.equalSegments(other) {
-		preSelf := v.Prerelease()
-		preOther := other.Prerelease()
-		if preSelf == "" && preOther == "" {
-			return 0
-		}
-		if preSelf == "" {
-			return 1
-		}
-		if preOther == "" {
-			return -1
-		}
-
-		return comparePrereleases(preSelf, preOther)
-	}
-
 	segmentsSelf := v.Segments64()
 	segmentsOther := other.Segments64()
 	// Get the highest specificity (hS), or if they're equal, just use segmentSelf length
@@ -230,8 +213,22 @@ func (v *Version) Compare(other *Version) int {
 		return 1
 	}
 
-	// if we got this far, they're equal
-	return 0
+	// Compare prereleases when numeric segments match
+	return comparePrereleaseStrings(v.Prerelease(), other.Prerelease())
+}
+
+func comparePrereleaseStrings(preSelf, preOther string) int {
+	if preSelf == "" && preOther == "" {
+		return 0
+	}
+	if preSelf == "" {
+		return 1
+	}
+	if preOther == "" {
+		return -1
+	}
+
+	return comparePrereleases(preSelf, preOther)
 }
 
 func (v *Version) equalSegments(other *Version) bool {
