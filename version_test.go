@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -915,5 +916,96 @@ func BenchmarkVersionCompareV2(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		v.Compare(o)
+	}
+}
+
+func TestComparePrereleaseAcrossSegmentLengths(t *testing.T) {
+	cases := []struct {
+		v1   string
+		v2   string
+		want int
+	}{
+		{"1.0.0-alpha", "1.0.0", -1},
+		{"1.0.0", "1.0.0.0", 0},
+		{"1.0.0-alpha", "1.0.0.0", -1},
+		{"1.0.0.0-rc", "1.0.0", -1},
+		{"1.0.0.0", "1.0.0-alpha", 1},
+		{"1.0.0-alpha", "1.0.0-beta", -1},
+		{"1.0.0.0-alpha", "1.0.0-beta", -1},
+		{"1.0.0-alpha", "1.0.0.0-beta", -1},
+		{"1.0.0.0-alpha", "1.0.0-alpha", 0},
+		{"1.0.0-alpha", "1.0.0.0-alpha", 0},
+		{"1.0-alpha", "1.0.0", -1},
+		{"1.0-alpha", "1.0.0.0", -1},
+		{"1.0.0.0", "1.0-alpha", 1},
+		{"1.0.0.1-alpha", "1.0.0", 1},
+		{"1.0.0", "1.0.0.1-alpha", -1},
+		{"1.0.0-alpha", "1.0.0.1", -1},
+		{"1.0.0.1", "1.0.0-alpha", 1},
+	}
+
+	for _, tc := range cases {
+		a := Must(NewVersion(tc.v1))
+		b := Must(NewVersion(tc.v2))
+		if got := a.Compare(b); got != tc.want {
+			t.Fatalf("Compare(%s, %s) = %d, want %d", tc.v1, tc.v2, got, tc.want)
+		}
+		if got := b.Compare(a); got != -tc.want {
+			t.Fatalf("Compare(%s, %s) = %d, want %d", tc.v2, tc.v1, got, -tc.want)
+		}
+	}
+
+	alpha := Must(NewVersion("1.0.0-alpha"))
+	cs := MustConstraints(NewConstraint("= 1.0.0.0"))
+	if cs.Check(alpha) {
+		t.Fatalf("= 1.0.0.0 matched %s", alpha)
+	}
+
+	csNotEqual := MustConstraints(NewConstraint("!= 1.0.0.0"))
+	if !csNotEqual.Check(alpha) {
+		t.Fatalf("!= 1.0.0.0 did not match %s", alpha)
+	}
+}
+
+func TestVersionEqualPrereleaseAcrossSegmentLengths(t *testing.T) {
+	v1 := Must(NewVersion("1.0.0-alpha"))
+	v2 := Must(NewVersion("1.0.0.0"))
+	v3 := Must(NewVersion("1.0.0"))
+
+	if v1.Equal(v2) {
+		t.Fatalf("expected %s != %s", v1, v2)
+	}
+	if !v2.Equal(v3) {
+		t.Fatalf("expected %s == %s", v2, v3)
+	}
+	if v3.Equal(v1) {
+		t.Fatalf("expected %s != %s", v3, v1)
+	}
+	if !v1.LessThan(v2) {
+		t.Fatalf("expected %s < %s", v1, v2)
+	}
+	if !v2.GreaterThan(v1) {
+		t.Fatalf("expected %s > %s", v2, v1)
+	}
+}
+
+func TestCollectionSortPrereleaseAcrossSegmentLengths(t *testing.T) {
+	raw := []string{"1.0.0.0", "1.0.0-alpha", "1.0.0", "1.0.0-beta", "1.0.0.0-rc"}
+	col := make(Collection, len(raw))
+	for i, s := range raw {
+		col[i] = Must(NewVersion(s))
+	}
+
+	sort.Sort(col)
+
+	for i := 0; i < 3; i++ {
+		if col[i].Prerelease() == "" {
+			t.Fatalf("expected prerelease at index %d, got %s", i, col[i].String())
+		}
+	}
+	for i := 3; i < len(col); i++ {
+		if col[i].Prerelease() != "" {
+			t.Fatalf("expected release version at index %d, got %s", i, col[i].String())
+		}
 	}
 }
