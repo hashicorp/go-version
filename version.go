@@ -522,6 +522,8 @@ func (v *Version) Scan(src interface{}) error {
 	switch src := src.(type) {
 	case string:
 		return v.UnmarshalText([]byte(src))
+	case []byte:
+		return v.UnmarshalText(src)
 	case nil:
 		return nil
 	default:
