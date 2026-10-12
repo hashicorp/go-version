@@ -259,9 +259,6 @@ func allZero(segs []int64) bool {
 }
 
 // isNumericIdentifier reports whether s consists entirely of ASCII digits.
-// Per the semver spec, numeric identifiers must not have leading zeroes,
-// so a longer string always represents a larger value and lexicographic
-// order equals numeric order for strings of the same length.
 func isNumericIdentifier(s string) bool {
 	if s == "" {
 		return false
@@ -276,8 +273,10 @@ func isNumericIdentifier(s string) bool {
 
 // compareNumericIdentifiers compares two all-digit strings by value without
 // parsing them into a fixed-width integer type, correctly handling values
-// larger than math.MaxInt64.
+// larger than math.MaxInt64 and leading zeroes accepted by NewVersion.
 func compareNumericIdentifiers(a, b string) int {
+	a = strings.TrimLeft(a, "0")
+	b = strings.TrimLeft(b, "0")
 	if len(a) != len(b) {
 		if len(a) > len(b) {
 			return 1

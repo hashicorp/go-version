@@ -917,3 +917,30 @@ func BenchmarkVersionCompareV2(b *testing.B) {
 		v.Compare(o)
 	}
 }
+
+func TestComparePrereleaseLeadingZeros(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want int
+	}{
+		{"01", "1", 0},
+		{"000", "0", 0},
+		{"001", "2", -1},
+		{"09", "10", -1},
+		{"0009223372036854775808", "9223372036854775807", 1},
+		{"0009223372036854775808", "9223372036854775808", 0},
+		{"00099999999999999999999", "100000000000000000000", -1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.a+"/"+tc.b, func(t *testing.T) {
+			a := Must(NewVersion("1.0.0-" + tc.a))
+			b := Must(NewVersion("1.0.0-" + tc.b))
+			if got := a.Compare(b); got != tc.want {
+				t.Errorf("Compare = %d, want %d", got, tc.want)
+			}
+			if got := b.Compare(a); got != -tc.want {
+				t.Errorf("reverse Compare = %d, want %d", got, -tc.want)
+			}
+		})
+	}
+}
