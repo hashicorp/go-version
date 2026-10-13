@@ -938,3 +938,17 @@ func TestPrereleaseCompareIsTransitive(t *testing.T) {
 		t.Errorf("alpha.beta should be > alpha, got Compare = %d", c.Compare(a))
 	}
 }
+
+func TestCoreZeroValue(t *testing.T) {
+	var v Version
+	core := v.Core()
+	if got := core.String(); got != "0.0.0" {
+		t.Fatalf("Core() = %q, want 0.0.0", got)
+	}
+	if !core.Equal(&v) || core == &v {
+		t.Fatal("Core must return a new, equal version")
+	}
+	if len(v.segments) != 0 {
+		t.Fatal("Core mutated the receiver")
+	}
+}
