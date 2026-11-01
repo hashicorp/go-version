@@ -174,19 +174,7 @@ func (v *Version) Compare(other *Version) int {
 
 	// If the segments are the same, we must compare on prerelease info
 	if v.equalSegments(other) {
-		preSelf := v.Prerelease()
-		preOther := other.Prerelease()
-		if preSelf == "" && preOther == "" {
-			return 0
-		}
-		if preSelf == "" {
-			return 1
-		}
-		if preOther == "" {
-			return -1
-		}
-
-		return comparePrereleases(preSelf, preOther)
+		return v.comparePrerelease(other)
 	}
 
 	segmentsSelf := v.Segments64()
@@ -209,7 +197,9 @@ func (v *Version) Compare(other *Version) int {
 				// if not, it means that Other has to be greater than Self
 				return -1
 			}
-			break
+			// The zero-padded segments are equal, so the prerelease
+			// information decides (issue #216).
+			return v.comparePrerelease(other)
 		} else if i > lenOther-1 {
 			// this means Other had the lower specificity
 			// Check to see if the remaining segments in Self are all zeros -
@@ -217,7 +207,9 @@ func (v *Version) Compare(other *Version) int {
 				// if not, it means that Self has to be greater than Other
 				return 1
 			}
-			break
+			// The zero-padded segments are equal, so the prerelease
+			// information decides (issue #216).
+			return v.comparePrerelease(other)
 		}
 		lhs := segmentsSelf[i]
 		rhs := segmentsOther[i]
@@ -230,8 +222,28 @@ func (v *Version) Compare(other *Version) int {
 		return 1
 	}
 
-	// if we got this far, they're equal
-	return 0
+	// If we got this far the numeric segments are equal (possibly after zero
+	// padding), so the prerelease information decides the result (issue #216).
+	return v.comparePrerelease(other)
+}
+
+// comparePrerelease compares the prerelease information of two versions whose
+// numeric segments are already known to be equal. A version without a
+// prerelease is greater than one with a prerelease, as in semver.
+func (v *Version) comparePrerelease(other *Version) int {
+	preSelf := v.Prerelease()
+	preOther := other.Prerelease()
+	if preSelf == "" && preOther == "" {
+		return 0
+	}
+	if preSelf == "" {
+		return 1
+	}
+	if preOther == "" {
+		return -1
+	}
+
+	return comparePrereleases(preSelf, preOther)
 }
 
 func (v *Version) equalSegments(other *Version) bool {
