@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -178,6 +179,13 @@ func TestVersionCompare(t *testing.T) {
 		{"1.7rc2", "1.7rc1", 1},
 		{"1.7rc2", "1.7", -1},
 		{"1.2.0", "1.2.0-X-1.2.0+metadata~dist", 1},
+		{"1.0.0-alpha", "1.0.0.0", -1},
+		{"1.0.0.0", "1.0.0-alpha", 1},
+		{"1.0.0.0-rc", "1.0.0", -1},
+		{"1.0.0", "1.0.0.0-rc", 1},
+		{"1.0.0-alpha", "1.0.0.0-beta", -1},
+		{"1.0.0.0-beta", "1.0.0-alpha", 1},
+		{"1.0.0-alpha", "1.0.0.0-alpha", 0},
 	}
 
 	for _, tc := range cases {
@@ -950,5 +958,31 @@ func TestCoreZeroValue(t *testing.T) {
 	}
 	if len(v.segments) != 0 {
 		t.Fatal("Core mutated the receiver")
+	}
+}
+
+func TestVersionCompare_differingSegmentCountPrerelease(t *testing.T) {
+	alpha := Must(NewVersion("1.0.0-alpha"))
+
+	cEqual := MustConstraints(NewConstraint("= 1.0.0.0"))
+	if cEqual.Check(alpha) {
+		t.Errorf("expected '= 1.0.0.0' to reject '1.0.0-alpha'")
+	}
+
+	cNotEqual := MustConstraints(NewConstraint("!= 1.0.0.0"))
+	if !cNotEqual.Check(alpha) {
+		t.Errorf("expected '!= 1.0.0.0' to match '1.0.0-alpha'")
+	}
+
+	var col Collection
+	for _, s := range []string{"1.0.0.0", "1.0.0-alpha", "1.0.0", "1.0.0-beta", "1.0.0.0-rc"} {
+		col = append(col, Must(NewVersion(s)))
+	}
+	sort.Sort(col)
+	expectedOrder := []string{"1.0.0-alpha", "1.0.0-beta", "1.0.0.0-rc"}
+	for i := 0; i < len(expectedOrder); i++ {
+		if col[i].String() != expectedOrder[i] {
+			t.Errorf("at index %d: expected %s, got %s (full sorted: %v)", i, expectedOrder[i], col[i].String(), col)
+		}
 	}
 }
