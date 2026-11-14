@@ -238,11 +238,21 @@ func (v *Version) equalSegments(other *Version) bool {
 	segmentsSelf := v.Segments64()
 	segmentsOther := other.Segments64()
 
-	if len(segmentsSelf) != len(segmentsOther) {
-		return false
+	lenSelf := len(segmentsSelf)
+	lenOther := len(segmentsOther)
+	maxLen := lenSelf
+	if lenOther > maxLen {
+		maxLen = lenOther
 	}
-	for i, v := range segmentsSelf {
-		if v != segmentsOther[i] {
+	for i := 0; i < maxLen; i++ {
+		var s, o int64
+		if i < lenSelf {
+			s = segmentsSelf[i]
+		}
+		if i < lenOther {
+			o = segmentsOther[i]
+		}
+		if s != o {
 			return false
 		}
 	}
