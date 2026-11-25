@@ -96,7 +96,7 @@ func NewVersion(v string, opts ...Option) (*Version, error) {
 		vToParse = strings.TrimPrefix(v, options.prefix)
 	}
 
-	ver, err := newVersion(vToParse, getVersionRegexp())
+	ver, err := newVersion(vToParse, getVersionRegexp(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -109,10 +109,10 @@ func NewVersion(v string, opts ...Option) (*Version, error) {
 // Version that adheres strictly to SemVer specs
 // https://semver.org/
 func NewSemver(v string) (*Version, error) {
-	return newVersion(v, getSemverRegexp())
+	return newVersion(v, getSemverRegexp(), true)
 }
 
-func newVersion(v string, pattern *regexp.Regexp) (*Version, error) {
+func newVersion(v string, pattern *regexp.Regexp, strictSegments bool) (*Version, error) {
 	matches := pattern.FindStringSubmatch(v)
 	if matches == nil {
 		return nil, fmt.Errorf("malformed version: %s", v)
@@ -120,6 +120,11 @@ func newVersion(v string, pattern *regexp.Regexp) (*Version, error) {
 	segmentsStr := strings.Split(matches[1], ".")
 	segments := make([]int64, len(segmentsStr))
 	for i, str := range segmentsStr {
+		if strictSegments && len(str) > 1 && str[0] == '0' {
+			// Semantic versioning forbids leading zeroes in the numeric
+			// version segments (https://semver.org/#spec-item-2).
+			return nil, fmt.Errorf("malformed version: %s", v)
+		}
 		val, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf(
